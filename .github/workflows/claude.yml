@@ -1,0 +1,40 @@
+name: Claude Code Review
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  claude-review:
+    if: |
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Run Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          include_fix_links: false
+          additional_permissions: |
+            actions: read
+          claude_args: |
+            --model claude-sonnet-5
+            --append-system-prompt 'このリポジトリではPull Requestのコードレビューだけを行う。コード、設定、ブランチを変更せず、commitやpushも行わない。レビューは日本語で書く。修正すべき具体的な問題の指摘だけを書き、称賛、要約、問題なしの説明は書かない。指摘が1件もなければ「指摘なし」とだけ書く。指摘には、問題が発生する条件、ユーザーまたはデータへの影響、修正すべき箇所を含め、可能なら該当行へinline commentを付ける。優先して確認する観点: docs/product-plan.mdのP0とdocs/implementation-guide.mdのMVP固定仕様への適合、Manifest V3とWXTの規約、Chrome権限の最小化、ページ本文や閲覧履歴の取得および外部通信がないこと、TypeScript strictとnull安全、React UIとDomain/Application/Infrastructureの責務分離、DomainがReact・Dexie・Chrome APIへ依存していないこと、IndexedDBの一意制約・transaction・migration、URL正規化とInbox重複防止、同一ページの再読記録、読了・断念・削除の状態遷移、JSON backupのstrict validation・参照整合性・rollback、Service Workerの停止を前提とした実装、アクセシビリティ、テスト不足やテストで検出できない不具合。単なる好み、根拠のない将来対応、MVP外機能の提案は指摘しない。'
