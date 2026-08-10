@@ -1,6 +1,6 @@
 import './App.css';
 
-function App() {
+function PopupApp() {
   return (
     <main className="popup-shell">
       <header>
@@ -31,4 +31,4 @@ function App() {
   );
 }
 
-export default App;
+export default PopupApp;

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import PopupApp from '../src/entrypoints/popup/App';
+import PopupApp from '../src/entrypoints/popup/PopupApp';
 import DashboardApp from '../src/entrypoints/dashboard/DashboardApp';
 
 describe('工程0の仮画面', () => {

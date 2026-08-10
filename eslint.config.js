@@ -14,9 +14,8 @@ export default tseslint.config(
       'react-hooks': eslintPluginReactHooks,
     },
     rules: {
-      'jsx-a11y/alt-text': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
-      'react-hooks/rules-of-hooks': 'error',
+      ...eslintPluginJsxA11y.configs.recommended.rules,
+      ...eslintPluginReactHooks.configs.recommended.rules,
     },
   },
 );
