@@ -32,6 +32,7 @@ function removeTrackingParameters(search: string): string {
   const retainedParameters = search
     .slice(1)
     .split('&')
+    .filter((parameter) => parameter !== '')
     .filter((parameter) => {
       const separatorIndex = parameter.indexOf('=');
       const rawName =

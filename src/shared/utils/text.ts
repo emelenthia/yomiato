@@ -12,7 +12,7 @@ export function normalizeTitle(title: string, fallback: string): string {
   const normalizedTitle = trimText(title);
   const titleWithFallback = normalizedTitle || trimText(fallback);
 
-  return titleWithFallback.slice(0, MAX_TITLE_LENGTH);
+  return Array.from(titleWithFallback).slice(0, MAX_TITLE_LENGTH).join('');
 }
 
 export function normalizeDismissalReason(reason: string): string {

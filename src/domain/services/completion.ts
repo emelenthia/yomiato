@@ -16,15 +16,15 @@ export function validateCompletion({
   reflection,
   noTakeaway,
 }: CompletionInput): ValidatedCompletion {
-  if (reflection.length > MAX_REFLECTION_LENGTH) {
-    throw new ApplicationError('REFLECTION_TOO_LONG');
-  }
-
   if (noTakeaway) {
     return {
       reflection: '',
       reflectionType: 'none',
     };
+  }
+
+  if (reflection.length > MAX_REFLECTION_LENGTH) {
+    throw new ApplicationError('REFLECTION_TOO_LONG');
   }
 
   const normalizedReflection = reflection.trim();

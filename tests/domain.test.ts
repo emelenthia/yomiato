@@ -41,6 +41,16 @@ describe('URLの正規化', () => {
     ).toBe('https://example.com/search?b=two&a=one');
   });
 
+  it('空のquery markerと空のquery要素を除去する', () => {
+    expect(normalizeUrl('https://example.com/?')).toBe('https://example.com/');
+    expect(normalizeUrl('https://example.com/?&a=1&&')).toBe(
+      'https://example.com/?a=1',
+    );
+    expect(normalizeUrl('https://example.com/?&utm_source=x&')).toBe(
+      'https://example.com/',
+    );
+  });
+
   it.each([
     'chrome://settings',
     'file:///tmp/page.html',
@@ -109,6 +119,15 @@ describe('読了条件', () => {
       }),
     ).toThrowError(expect.objectContaining({ code: 'REFLECTION_TOO_LONG' }));
   });
+
+  it('得るものなしを選んだ場合は入力中の長いreflectionを保存しない', () => {
+    expect(
+      validateCompletion({
+        reflection: 'a'.repeat(MAX_REFLECTION_LENGTH + 1),
+        noTakeaway: true,
+      }),
+    ).toEqual({ reflection: '', reflectionType: 'none' });
+  });
 });
 
 describe('共通値とポート', () => {
@@ -116,6 +135,9 @@ describe('共通値とポート', () => {
     expect(trimText('  text  ')).toBe('text');
     expect(normalizeTitle('  ', ' example.com ')).toBe('example.com');
     expect(normalizeTitle('a'.repeat(2_000), 'fallback')).toHaveLength(1_000);
+    expect(normalizeTitle(`${'a'.repeat(999)}😀b`, 'fallback')).toBe(
+      `${'a'.repeat(999)}😀`,
+    );
     expect(normalizeDismissalReason('  理由  ')).toBe('理由');
     expect(() => normalizeDismissalReason('a'.repeat(1_001))).toThrowError(
       expect.objectContaining({ code: 'DISMISSAL_REASON_TOO_LONG' }),
