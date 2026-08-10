@@ -1,0 +1,5 @@
+export const MAX_URL_LENGTH = 16_384;
+export const MAX_TITLE_LENGTH = 1_000;
+export const MAX_REFLECTION_LENGTH = 5_000;
+export const MAX_DISMISSAL_REASON_LENGTH = 1_000;
+export const MAX_IMPORT_FILE_SIZE = 10 * 1024 * 1024;
