@@ -6,6 +6,8 @@ import { parseAndNormalizeUrl } from '../../domain/values/url';
 import { normalizeTitle } from '../../shared/utils/text';
 import TabImportPanel from '../../features/tab-import/TabImportPanel';
 import type { TabImportServices } from '../../features/tab-import';
+import InboxView from '../../features/inbox/InboxView';
+import type { InboxServices } from '../../features/inbox/inbox-services';
 
 export const dashboardViews = [
   {
@@ -42,6 +44,7 @@ export interface CompletionDraft {
 
 export interface DashboardAppProps {
   tabImportServices?: TabImportServices;
+  inboxServices?: InboxServices;
 }
 
 export function getDashboardView(search: string): DashboardViewId {
@@ -84,7 +87,7 @@ function updateDashboardUrl(view: DashboardViewId) {
   window.history.pushState({ view }, '', url);
 }
 
-function DashboardApp({ tabImportServices }: DashboardAppProps) {
+function DashboardApp({ tabImportServices, inboxServices }: DashboardAppProps) {
   const [activeView, setActiveView] = React.useState<DashboardViewId>(() =>
     getDashboardView(window.location.search),
   );
@@ -218,10 +221,14 @@ function DashboardApp({ tabImportServices }: DashboardAppProps) {
               )}
             </div>
           ) : null}
-          <EmptyState
-            title={selectedView.emptyTitle}
-            description={selectedView.emptyDescription}
-          />
+          {activeView === 'inbox' && inboxServices ? (
+            <InboxView services={inboxServices} />
+          ) : (
+            <EmptyState
+              title={selectedView.emptyTitle}
+              description={selectedView.emptyDescription}
+            />
+          )}
         </section>
       )}
     </main>

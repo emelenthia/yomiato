@@ -15,7 +15,7 @@ export function formatDisplayDateTime(value: Date | string): string {
     throw new ApplicationError('INVALID_INPUT', 'Invalid date');
   }
 
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat('ja-JP', {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(date);
