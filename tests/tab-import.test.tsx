@@ -1,4 +1,10 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { BrowserGatewayError } from '../src/infrastructure/browser';
@@ -64,6 +70,34 @@ describe('工程7の複数タブ取り込み', () => {
     expect(
       screen.getByRole('button', { name: '複数タブを取り込む' }),
     ).toHaveFocus();
+  });
+
+  it('背景を不活性化し、Tabフォーカスをパネル内で循環させる', async () => {
+    const user = userEvent.setup();
+
+    render(<DashboardApp tabImportServices={createServices()} />);
+    await user.click(
+      screen.getByRole('button', { name: '複数タブを取り込む' }),
+    );
+
+    const dialog = screen.getByRole('dialog');
+    const navigation = screen.getByRole('navigation', { hidden: true });
+    const closeButton = screen.getByRole('button', { name: '閉じる' });
+    const loadButton = screen.getByRole('button', {
+      name: 'タブ一覧を読み込む',
+    });
+
+    expect(navigation).toHaveAttribute('aria-hidden', 'true');
+    expect(navigation).toHaveAttribute('inert');
+
+    closeButton.focus();
+    fireEvent.keyDown(closeButton, { key: 'Tab', shiftKey: true });
+    expect(loadButton).toHaveFocus();
+
+    loadButton.focus();
+    fireEvent.keyDown(loadButton, { key: 'Tab' });
+    expect(closeButton).toHaveFocus();
+    expect(dialog).toBeInTheDocument();
   });
 
   it('一覧の読み込み後にタブ選択へフォーカスを移す', async () => {

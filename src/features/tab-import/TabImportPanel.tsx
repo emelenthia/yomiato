@@ -53,6 +53,14 @@ function isSelectable(candidate: TabImportCandidate): boolean {
   return !candidate.isInInbox && !candidate.isInputDuplicate;
 }
 
+function getFocusableElements(panel: HTMLElement): ReadonlyArray<HTMLElement> {
+  return Array.from(
+    panel.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+    ),
+  ).filter((element) => !element.closest('fieldset[disabled]'));
+}
+
 function TabImportPanel({ services, onClose }: TabImportPanelProps) {
   const [state, setState] = React.useState<PanelState>({
     phase: 'ready-to-load',
@@ -91,9 +99,44 @@ function TabImportPanel({ services, onClose }: TabImportPanelProps) {
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      const panel = panelRef.current;
+      if (!panel) {
+        return;
+      }
+
       if (event.key === 'Escape' && !isImporting) {
         event.preventDefault();
         onClose();
+        return;
+      }
+
+      if (
+        event.key !== 'Tab' ||
+        !(event.target instanceof Node) ||
+        !panel.contains(event.target)
+      ) {
+        return;
+      }
+
+      const focusableElements = getFocusableElements(panel);
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        panel.focus();
+        return;
+      }
+
+      const firstElement = focusableElements.at(0);
+      const lastElement = focusableElements.at(-1);
+      if (!firstElement || !lastElement) {
+        return;
+      }
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
       }
     };
 

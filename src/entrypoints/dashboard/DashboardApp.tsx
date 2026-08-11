@@ -93,8 +93,13 @@ function DashboardApp({ tabImportServices }: DashboardAppProps) {
   );
   const [isTabImportOpen, setIsTabImportOpen] = React.useState(false);
   const tabImportTriggerRef = React.useRef<HTMLButtonElement>(null);
+  const navigationRef = React.useRef<HTMLElement>(null);
   const completionRoute =
     new URLSearchParams(window.location.search).get('view') === 'complete';
+
+  React.useEffect(() => {
+    navigationRef.current?.toggleAttribute('inert', isTabImportOpen);
+  }, [isTabImportOpen]);
 
   React.useEffect(() => {
     if (!completionRoute) {
@@ -154,7 +159,11 @@ function DashboardApp({ tabImportServices }: DashboardAppProps) {
         </p>
       </header>
 
-      <nav aria-label="管理画面のビュー">
+      <nav
+        ref={navigationRef}
+        aria-label="管理画面のビュー"
+        aria-hidden={isTabImportOpen || undefined}
+      >
         {dashboardViews.map((view) => (
           <Button
             type="button"
