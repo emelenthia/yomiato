@@ -66,6 +66,10 @@ function DashboardApp() {
   }
 
   const handleViewChange = (view: DashboardViewId) => {
+    if (view === activeView) {
+      return;
+    }
+
     updateDashboardUrl(view);
     setActiveView(view);
   };

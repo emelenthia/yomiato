@@ -53,6 +53,32 @@ describe('工程5のDashboard', () => {
     expect(screen.getByText('保存データはまだありません')).toBeVisible();
   });
 
+  it('同じビューを選び直しても履歴を追加しない', () => {
+    window.history.replaceState({}, '', '/dashboard.html?view=inbox');
+    render(<DashboardApp />);
+    const pushState = vi.spyOn(window.history, 'pushState');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Inbox' }));
+
+    expect(pushState).not.toHaveBeenCalled();
+    pushState.mockRestore();
+  });
+
+  it('popstateで戻る・進む先のビューへ追従する', () => {
+    window.history.replaceState({}, '', '/dashboard.html?view=inbox');
+    render(<DashboardApp />);
+
+    window.history.pushState({}, '', '/dashboard.html?view=log');
+    fireEvent.popState(window);
+    expect(screen.getByRole('heading', { name: '読書ログ' })).toBeVisible();
+
+    window.history.pushState({}, '', '/dashboard.html?view=settings');
+    fireEvent.popState(window);
+    expect(
+      screen.getByRole('heading', { name: '設定・データ管理' }),
+    ).toBeVisible();
+  });
+
   it('未対応または欠落したビューはInboxへ戻す', () => {
     expect(getDashboardView('?view=unknown')).toBe('inbox');
     expect(getDashboardView('')).toBe('inbox');
