@@ -2,6 +2,9 @@ import React from 'react';
 import './DashboardApp.css';
 import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
+import { parseAndNormalizeUrl } from '../../domain/values/url';
+import { MAX_TITLE_LENGTH } from '../../shared/constants/limits';
+import { trimText } from '../../shared/utils/text';
 
 export const dashboardViews = [
   {
@@ -31,12 +34,50 @@ export type DashboardViewId = (typeof dashboardViews)[number]['id'];
 
 const defaultView: DashboardViewId = 'inbox';
 
+export interface CompletionDraft {
+  url: string;
+  title: string;
+}
+
 export function getDashboardView(search: string): DashboardViewId {
   const view = new URLSearchParams(search).get('view');
 
   return dashboardViews.some((candidate) => candidate.id === view)
     ? (view as DashboardViewId)
     : defaultView;
+}
+
+export function getCompletionDraft(
+  search: string,
+): CompletionDraft | undefined {
+  const params = new URLSearchParams(search);
+
+  if (params.get('view') !== 'complete') {
+    return undefined;
+  }
+
+  const url = params.get('url');
+  const title = params.get('title');
+
+  if (!url || title === null) {
+    return undefined;
+  }
+
+  try {
+    const parsedUrl = parseAndNormalizeUrl(url);
+    const normalizedTitle = trimText(title);
+
+    if (
+      normalizedTitle.length === 0 ||
+      Array.from(normalizedTitle).length > MAX_TITLE_LENGTH
+    ) {
+      return undefined;
+    }
+
+    return { url: parsedUrl.originalUrl, title: normalizedTitle };
+  } catch {
+    return undefined;
+  }
 }
 
 function updateDashboardUrl(view: DashboardViewId) {
@@ -49,6 +90,26 @@ function DashboardApp() {
   const [activeView, setActiveView] = React.useState<DashboardViewId>(() =>
     getDashboardView(window.location.search),
   );
+  const [completionDraft, setCompletionDraft] = React.useState(() =>
+    getCompletionDraft(window.location.search),
+  );
+  const completionRoute =
+    new URLSearchParams(window.location.search).get('view') === 'complete';
+
+  React.useEffect(() => {
+    if (!completionRoute) {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.searchParams.set('view', completionDraft ? 'complete' : 'inbox');
+    window.history.replaceState(
+      { view: completionDraft ? 'complete' : 'inbox' },
+      '',
+      url,
+    );
+  }, [completionDraft, completionRoute]);
 
   React.useEffect(() => {
     const handlePopState = () => {
@@ -71,6 +132,7 @@ function DashboardApp() {
     }
 
     updateDashboardUrl(view);
+    setCompletionDraft(undefined);
     setActiveView(view);
   };
 
@@ -100,15 +162,38 @@ function DashboardApp() {
         ))}
       </nav>
 
-      <section className="view-panel" aria-labelledby="active-view-heading">
-        <p className="eyebrow">現在のビュー</p>
-        <h2 id="active-view-heading">{selectedView.title}</h2>
-        <p className="view-description">{selectedView.description}</p>
-        <EmptyState
-          title={selectedView.emptyTitle}
-          description={selectedView.emptyDescription}
-        />
-      </section>
+      {completionDraft ? (
+        <section className="view-panel" aria-labelledby="completion-heading">
+          <p className="eyebrow">読了入力</p>
+          <h2 id="completion-heading">読了として記録</h2>
+          <p className="view-description">
+            Popupで選んだページを読了として記録します。
+          </p>
+          <dl className="completion-page">
+            <div>
+              <dt>タイトル</dt>
+              <dd>{completionDraft.title}</dd>
+            </div>
+            <div>
+              <dt>URL</dt>
+              <dd>{completionDraft.url}</dd>
+            </div>
+          </dl>
+          <p className="status" role="status">
+            振り返りの入力画面は次の工程で追加します。
+          </p>
+        </section>
+      ) : (
+        <section className="view-panel" aria-labelledby="active-view-heading">
+          <p className="eyebrow">現在のビュー</p>
+          <h2 id="active-view-heading">{selectedView.title}</h2>
+          <p className="view-description">{selectedView.description}</p>
+          <EmptyState
+            title={selectedView.emptyTitle}
+            description={selectedView.emptyDescription}
+          />
+        </section>
+      )}
     </main>
   );
 }

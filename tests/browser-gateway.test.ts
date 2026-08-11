@@ -155,6 +155,21 @@ describe('BrowserGateway', () => {
     });
   });
 
+  it('読了入力用DashboardへURLとタイトルをエンコードして開く', async () => {
+    const api = createApi();
+    const gateway = new BrowserGateway(api);
+
+    await gateway.openDashboard({
+      view: 'complete',
+      url: 'https://example.com/article?query=日本語',
+      title: '記事のタイトル',
+    });
+
+    expect(api.tabs.create).toHaveBeenCalledWith({
+      url: 'chrome-extension://test/dashboard.html?view=complete&url=https%3A%2F%2Fexample.com%2Farticle%3Fquery%3D%E6%97%A5%E6%9C%AC%E8%AA%9E&title=%E8%A8%98%E4%BA%8B%E3%81%AE%E3%82%BF%E3%82%A4%E3%83%88%E3%83%AB',
+    });
+  });
+
   it('tabs.createの例外をBROWSER_API_FAILUREへ変換する', async () => {
     const api = createApi();
     api.tabs.create.mockRejectedValue(new Error('create failed'));

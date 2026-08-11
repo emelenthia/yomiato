@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { createPopupRuntime } from '../../features/capture';
 import PopupApp from './PopupApp.tsx';
 import './style.css';
 
@@ -9,8 +10,21 @@ if (!rootElement) {
   throw new Error('Popup root element was not found.');
 }
 
-ReactDOM.createRoot(rootElement).render(
-  <React.StrictMode>
-    <PopupApp />
-  </React.StrictMode>,
-);
+const runtime = createPopupRuntime();
+
+void runtime.database
+  .open()
+  .then(() => {
+    ReactDOM.createRoot(rootElement).render(
+      <React.StrictMode>
+        <PopupApp services={runtime} />
+      </React.StrictMode>,
+    );
+  })
+  .catch(() => {
+    ReactDOM.createRoot(rootElement).render(
+      <React.StrictMode>
+        <PopupApp initializationError="保存領域を準備できませんでした。" />
+      </React.StrictMode>,
+    );
+  });

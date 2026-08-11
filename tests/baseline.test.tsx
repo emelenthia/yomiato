@@ -21,6 +21,36 @@ describe('工程5のDashboard', () => {
     ).toBeVisible();
   });
 
+  it('直接読了のページ情報を検証して画面内へ保持し、クエリを除去する', () => {
+    window.history.replaceState(
+      {},
+      '',
+      '/dashboard.html?view=complete&url=https%3A%2F%2Fexample.com%2Farticle&title=%E8%A8%98%E4%BA%8B',
+    );
+    render(<DashboardApp />);
+
+    expect(
+      screen.getByRole('heading', { name: '読了として記録' }),
+    ).toBeVisible();
+    expect(screen.getByText('記事')).toBeVisible();
+    expect(screen.getByText('https://example.com/article')).toBeVisible();
+    expect(window.location.search).toBe('?view=complete');
+  });
+
+  it('不正な直接読了パラメータでは入力画面を開かない', () => {
+    window.history.replaceState(
+      {},
+      '',
+      '/dashboard.html?view=complete&url=chrome%3A%2F%2Fsettings&title=%E8%A8%AD%E5%AE%9A',
+    );
+    render(<DashboardApp />);
+
+    expect(
+      screen.queryByRole('heading', { name: '読了として記録' }),
+    ).not.toBeInTheDocument();
+    expect(window.location.search).toBe('?view=inbox');
+  });
+
   it('Inboxの空状態を表示できる', () => {
     render(<DashboardApp />);
 
