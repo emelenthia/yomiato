@@ -39,7 +39,7 @@
 | E2Eテスト | Playwright + Chromium |
 | 静的解析 | TypeScript、ESLint、eslint-plugin-react-hooks、eslint-plugin-jsx-a11y |
 | フォーマット | Prettier |
-| パッケージ管理 | npm + package-lock.json |
+| パッケージ管理 | pnpm + pnpm-lock.yaml |
 | バックエンド | MVPでは作らない |
 | テレメトリー | MVPでは収集しない |
 | バックアップ | バージョン付きJSONの手動エクスポート／インポート |
@@ -508,7 +508,7 @@ yomiato/
 ├─ .nvmrc
 ├─ eslint.config.js
 ├─ package.json
-├─ package-lock.json
+├─ pnpm-lock.yaml
 ├─ playwright.config.ts
 ├─ prettier.config.js
 ├─ tsconfig.json
@@ -642,7 +642,7 @@ Playwrightでビルド済み拡張をChromiumのpersistent contextへ読み込�
 ### 15.1 Node.jsと依存関係
 
 - 実装開始時点のActive LTS版Node.jsを`.nvmrc`へ固定する。
-- npmを使用し、`package-lock.json`をコミットする。
+- pnpmを使用し、`pnpm-lock.yaml`をコミットする。
 - 依存関係は正確なロックファイルで再現する。
 - 自動的なメジャーバージョン更新を行わない。
 
@@ -854,4 +854,3 @@ MVPでは解析SDK、クラッシュ送信、行動追跡を導入しない。�
 - [Zod: Basic usage](https://zod.dev/basics)
 - [Vitest: Getting Started](https://vitest.dev/guide/)
 - [Playwright: Chrome extensions](https://playwright.dev/docs/chrome-extensions)
-

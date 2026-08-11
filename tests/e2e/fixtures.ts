@@ -14,7 +14,7 @@ export interface FixtureTab {
 async function launchExtensionContext(profilePath: string) {
   if (!fs.existsSync(path.join(extensionPath, 'manifest.json'))) {
     throw new Error(
-      'ビルド済み拡張がありません。npm run buildを先に実行してください。',
+      'ビルド済み拡張がありません。pnpm run buildを先に実行してください。',
     );
   }
 
