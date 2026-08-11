@@ -14,6 +14,10 @@ const archivePath = join(
   outputRoot,
   `yomiato-${packageJson.version}-chrome.zip`,
 );
+const runtimeNetworkPattern =
+  /\bfetch\s*\(|\bXMLHttpRequest\b|\bWebSocket\b|navigator\.sendBeacon\s*\(|\bEventSource\b/;
+const knownBrowserCompatibilityChunkPattern =
+  /(?:^|\/)chunks\/browser-[^/]+\.js$/;
 
 async function listFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -100,6 +104,16 @@ async function verifyManifest() {
     false,
     'web_accessible_resources must not be declared',
   );
+  assert.equal(
+    'optional_host_permissions' in manifest,
+    false,
+    'optional_host_permissions must not be declared',
+  );
+  assert.equal(
+    'content_security_policy' in manifest,
+    false,
+    'content_security_policy must not be declared',
+  );
 
   for (const requiredFile of [
     manifest.background?.service_worker,
@@ -154,6 +168,15 @@ async function verifyExtensionFiles() {
       !/\bnew\s+Function\s*\(/.test(content),
       `${filePath} contains a dynamically constructed function`,
     );
+    if (/\.js$/i.test(filePath) && runtimeNetworkPattern.test(content)) {
+      const relativePath = relative(extensionRoot, filePath)
+        .split('\\')
+        .join('/');
+      assert(
+        knownBrowserCompatibilityChunkPattern.test(relativePath),
+        `${relative(projectRoot, filePath)} contains a runtime network API`,
+      );
+    }
   }
 
   return relativeFiles;
@@ -163,13 +186,10 @@ async function verifyApplicationSource() {
   const sourceFiles = (await listFiles(join(projectRoot, 'src'))).filter(
     (filePath) => /\.(?:ts|tsx|js|jsx|css|html)$/i.test(filePath),
   );
-  const networkPattern =
-    /\bfetch\s*\(|\bXMLHttpRequest\b|\bWebSocket\b|navigator\.sendBeacon\s*\(|\bEventSource\b/;
-
   for (const filePath of sourceFiles) {
     const content = await readFile(filePath, 'utf8');
     assert(
-      !networkPattern.test(content),
+      !runtimeNetworkPattern.test(content),
       `${relative(projectRoot, filePath)} contains a runtime network API`,
     );
     assert(!/\beval\s*\(/.test(content), `${filePath} contains eval`);

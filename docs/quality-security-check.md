@@ -19,7 +19,7 @@ related: [[Projects/yomiato]]
 7. `npm run zip` — `yomiato-0.0.0-chrome.zip`（134.32 kB）の生成に成功
 8. `npm run verify:release` — Manifest、権限、生成物15ファイル、ZIP内容の検証に成功
 
-`verify:release` は、生成されたManifestがManifest V3であること、`activeTab`と`tabs`以外の権限がないこと、host permissions・Content Script・外部接続設定がないことを確認する。生成HTML・CSSの外部アセット参照、inline script、source map、`eval`、動的関数生成、テストやdocsの混入も確認し、ZIPが生成ディレクトリと同じ内容であることを検証する。アプリケーションソースには実行時ネットワークAPIがないことを確認する。
+`verify:release` は、生成されたManifestがManifest V3であること、`activeTab`と`tabs`以外の権限がないこと、host permissions・Content Script・外部接続設定・`optional_host_permissions`・`content_security_policy`がないことを確認する。生成HTML・CSSの外部アセット参照、生成JavaScriptの実行時ネットワークAPI、inline script、source map、`eval`、動的関数生成、テストやdocsの混入も確認し、ZIPが生成ディレクトリと同じ内容であることを検証する。WXTの既知のブラウザ互換チャンクに含まれるAPI文字列だけは許可し、それ以外の生成JavaScriptで検出した場合は失敗させる。
 
 ## 手動確認
 
@@ -33,5 +33,6 @@ related: [[Projects/yomiato]]
 | ブラウザ再起動、拡張機能再読み込み、Service Worker停止 | E2Eで再起動相当と永続性を確認済み。実ブラウザ操作は要確認 |
 | キーボード操作、200% zoom、ライト・ダーク | キーボード操作はUIテストで確認済み。zoomと実ブラウザ配色は要確認 |
 | 空DB、数百件程度のfixture、壊れたバックアップ | 空DBと壊れたバックアップは自動テストで確認済み。数百件fixtureは要確認 |
+| 依存パッケージを含む生成JavaScriptバンドルの外部通信 | アプリケーションソースと生成アプリチャンクは自動検査済み。WXTブラウザ互換チャンクを含む依存コードの実行時通信は要確認 |
 
 この実行では実ブラウザを手動操作していないため、新規インストールを伴う項目は要確認として記録する。自動テストで確認できる範囲は、テスト結果とリリース検証スクリプトの出力をPR本文に記載する。
