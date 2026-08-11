@@ -6,6 +6,7 @@ export {
 export type {
   ActiveTabResult,
   BrowserApi,
+  DashboardOpenOptions,
   BrowserGatewayErrorCode,
   BrowserTabInfo,
   BrowserTabRecord,

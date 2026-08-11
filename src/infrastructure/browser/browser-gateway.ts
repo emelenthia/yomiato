@@ -49,6 +49,12 @@ export interface BrowserRuntimeApi {
   getManifest(): { version?: string };
 }
 
+export interface DashboardOpenOptions {
+  view?: string;
+  url?: string;
+  title?: string;
+}
+
 export interface BrowserApi {
   tabs: BrowserTabsApi;
   permissions: BrowserPermissionsApi;
@@ -174,10 +180,28 @@ export class BrowserGateway {
     }
   }
 
-  async openDashboard(): Promise<void> {
+  async openDashboard(options?: DashboardOpenOptions): Promise<void> {
     try {
+      const dashboardUrl = new URL(this.api.runtime.getURL('dashboard.html'));
+
+      if (options?.view) {
+        dashboardUrl.searchParams.set('view', options.view);
+      }
+
+      if (options?.url) {
+        if (!isSupportedUrl(options.url)) {
+          throw new BrowserGatewayError('UNSUPPORTED_URL');
+        }
+
+        dashboardUrl.searchParams.set('url', options.url);
+      }
+
+      if (options?.title !== undefined) {
+        dashboardUrl.searchParams.set('title', options.title);
+      }
+
       await this.api.tabs.create({
-        url: this.api.runtime.getURL('dashboard.html'),
+        url: dashboardUrl.toString(),
       });
     } catch (error) {
       throw browserApiFailure(error);

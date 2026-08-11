@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import PopupApp from '../src/entrypoints/popup/PopupApp';
 import DashboardApp, {
+  getCompletionDraft,
   getDashboardView,
 } from '../src/entrypoints/dashboard/DashboardApp';
 import { DashboardErrorBoundary } from '../src/entrypoints/dashboard/DashboardErrorBoundary';
@@ -19,6 +20,57 @@ describe('工程5のDashboard', () => {
     expect(
       screen.getByRole('heading', { name: /読みたいページ/ }),
     ).toBeVisible();
+  });
+
+  it('直接読了のページ情報を検証して画面内へ保持し、クエリを除去する', () => {
+    window.history.replaceState(
+      {},
+      '',
+      '/dashboard.html?view=complete&url=https%3A%2F%2Fexample.com%2Farticle&title=%E8%A8%98%E4%BA%8B',
+    );
+    render(<DashboardApp />);
+
+    expect(
+      screen.getByRole('heading', { name: '読了として記録' }),
+    ).toBeVisible();
+    expect(screen.getByText('記事')).toBeVisible();
+    expect(screen.getByText('https://example.com/article')).toBeVisible();
+    expect(window.location.search).toBe('?view=complete');
+  });
+
+  it('不正な直接読了パラメータでは入力画面を開かない', () => {
+    window.history.replaceState(
+      {},
+      '',
+      '/dashboard.html?view=complete&url=chrome%3A%2F%2Fsettings&title=%E8%A8%AD%E5%AE%9A',
+    );
+    render(<DashboardApp />);
+
+    expect(
+      screen.queryByRole('heading', { name: '読了として記録' }),
+    ).not.toBeInTheDocument();
+    expect(window.location.search).toBe('?view=inbox');
+  });
+
+  it('直接読了のtitleを上限まで切り詰め、空titleはsiteNameへフォールバックする', () => {
+    const longTitle = 'あ'.repeat(1_001);
+
+    expect(
+      getCompletionDraft(
+        `?view=complete&url=https%3A%2F%2Fexample.com%2Farticle&title=${encodeURIComponent(longTitle)}`,
+      ),
+    ).toEqual({
+      url: 'https://example.com/article',
+      title: 'あ'.repeat(1_000),
+    });
+    expect(
+      getCompletionDraft(
+        '?view=complete&url=https%3A%2F%2Fexample.com%2Farticle&title=',
+      ),
+    ).toEqual({
+      url: 'https://example.com/article',
+      title: 'example.com',
+    });
   });
 
   it('Inboxの空状態を表示できる', () => {
