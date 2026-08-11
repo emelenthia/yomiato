@@ -80,33 +80,36 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+function unsupportedTab(
+  tab: BrowserTabRecord,
+  reason: UnsupportedTabReason,
+): TabInspection {
+  return {
+    outcome: 'unsupported',
+    tab: {
+      id: tab.id,
+      url: tab.url,
+      title: tab.title,
+      reason,
+    },
+  };
+}
+
 function inspectTab(tab: BrowserTabRecord): TabInspection {
   if (typeof tab.id !== 'number') {
-    return {
-      outcome: 'unsupported',
-      tab: { ...tab, reason: 'MISSING_ID' },
-    };
+    return unsupportedTab(tab, 'MISSING_ID');
   }
 
   if (typeof tab.url !== 'string' || tab.url.trim() === '') {
-    return {
-      outcome: 'unsupported',
-      tab: { ...tab, reason: 'MISSING_URL' },
-    };
+    return unsupportedTab(tab, 'MISSING_URL');
   }
 
   if (typeof tab.title !== 'string') {
-    return {
-      outcome: 'unsupported',
-      tab: { ...tab, reason: 'MISSING_TITLE' },
-    };
+    return unsupportedTab(tab, 'MISSING_TITLE');
   }
 
   if (!isSupportedUrl(tab.url)) {
-    return {
-      outcome: 'unsupported',
-      tab: { ...tab, reason: 'UNSUPPORTED_URL' },
-    };
+    return unsupportedTab(tab, 'UNSUPPORTED_URL');
   }
 
   return {

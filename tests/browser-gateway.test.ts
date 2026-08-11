@@ -15,6 +15,10 @@ function createApi(tabs: ReadonlyArray<BrowserTabRecord> = []): BrowserApi & {
     contains: ReturnType<typeof vi.fn>;
     request: ReturnType<typeof vi.fn>;
   };
+  runtime: {
+    getURL: ReturnType<typeof vi.fn>;
+    getManifest: ReturnType<typeof vi.fn>;
+  };
 } {
   return {
     tabs: {
@@ -64,7 +68,12 @@ describe('BrowserGateway', () => {
 
   it('URL、title、対応schemeが欠落したタブをunsupportedとして返す', async () => {
     const api = createApi([
-      { id: 1, title: 'URLなし' },
+      {
+        id: 1,
+        title: 'URLなし',
+        favIconUrl: 'https://example.com/favicon.ico',
+        windowId: 4,
+      } as BrowserTabRecord,
       { id: 2, url: 'https://example.com' },
       { id: 3, url: 'chrome://settings', title: '設定' },
     ]);
@@ -102,6 +111,20 @@ describe('BrowserGateway', () => {
     });
   });
 
+  it('権限APIの例外をBROWSER_API_FAILUREへ変換する', async () => {
+    const api = createApi();
+    api.permissions.contains.mockRejectedValue(new Error('contains failed'));
+    api.permissions.request.mockRejectedValue(new Error('request failed'));
+    const gateway = new BrowserGateway(api);
+
+    await expect(gateway.hasTabsPermission()).rejects.toMatchObject({
+      code: 'BROWSER_API_FAILURE',
+    });
+    await expect(gateway.requestTabsPermission()).rejects.toMatchObject({
+      code: 'BROWSER_API_FAILURE',
+    });
+  });
+
   it('tabs権限の確認と要求を行い、拒否をPERMISSION_DENIEDにする', async () => {
     const api = createApi();
     api.permissions.contains.mockResolvedValue(false);
@@ -132,6 +155,19 @@ describe('BrowserGateway', () => {
     });
   });
 
+  it('tabs.createの例外をBROWSER_API_FAILUREへ変換する', async () => {
+    const api = createApi();
+    api.tabs.create.mockRejectedValue(new Error('create failed'));
+    const gateway = new BrowserGateway(api);
+
+    await expect(gateway.openDashboard()).rejects.toMatchObject({
+      code: 'BROWSER_API_FAILURE',
+    });
+    await expect(
+      gateway.openSavedUrl('https://example.com/saved'),
+    ).rejects.toMatchObject({ code: 'BROWSER_API_FAILURE' });
+  });
+
   it('対応外URLを開かずにエラーにする', async () => {
     const api = createApi();
     const gateway = new BrowserGateway(api);
@@ -146,6 +182,18 @@ describe('BrowserGateway', () => {
     const gateway = new BrowserGateway(createApi());
 
     expect(gateway.getAppVersion()).toBe('1.2.3');
+  });
+
+  it('runtime.getManifestの例外をBROWSER_API_FAILUREへ変換する', () => {
+    const api = createApi();
+    api.runtime.getManifest.mockImplementation(() => {
+      throw new Error('manifest failed');
+    });
+    const gateway = new BrowserGateway(api);
+
+    expect(() => gateway.getAppVersion()).toThrow(
+      expect.objectContaining({ code: 'BROWSER_API_FAILURE' }),
+    );
   });
 
   it('JSON Blobを通常のリンクダウンロードとして保存する', () => {
