@@ -157,6 +157,7 @@ describe('工程9の読書ログ', () => {
     await screen.findByText('過去の振り返り');
     await user.click(screen.getByRole('button', { name: '再読' }));
 
+    expect(screen.getByText(/前回の読了日/)).toBeVisible();
     expect(screen.getByRole('textbox', { name: '振り返り' })).toHaveValue('');
     await user.type(
       screen.getByRole('textbox', { name: '振り返り' }),
@@ -169,6 +170,37 @@ describe('工程9の読書ログ', () => {
       reflection: '再読の気づき',
       noTakeaway: false,
     });
+  });
+
+  it('後続操作が失敗したとき、成功メッセージを残さない', async () => {
+    const services = createServices([
+      createItem(
+        'one',
+        '記事',
+        'https://example.com/one',
+        '2026-08-11T00:00:00.000Z',
+      ),
+    ]);
+    services.deleteReadingEntry.execute = vi
+      .fn()
+      .mockRejectedValue(new ApplicationError('STORAGE_FAILURE'));
+    const user = userEvent.setup();
+
+    render(<ReadingLogView services={services} />);
+    await screen.findByText('最初の気づき');
+    await user.click(screen.getByRole('button', { name: '編集' }));
+    await user.click(screen.getByRole('button', { name: '更新する' }));
+
+    expect(await screen.findByText('振り返りを更新しました。')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: '削除' }));
+    await user.click(screen.getByRole('button', { name: '削除する' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      '削除に失敗しました',
+    );
+    expect(
+      screen.queryByText('振り返りを更新しました。'),
+    ).not.toBeInTheDocument();
   });
 
   it('削除は確認後に一件だけ実行する', async () => {

@@ -60,6 +60,7 @@ export function ReadingLogView({ services }: ReadingLogViewProps) {
     const requestId = ++requestIdRef.current;
     setIsLoading(true);
     setError(undefined);
+    setMessage(undefined);
 
     try {
       const nextItems = await services.listReadingLog.execute(search);
@@ -104,6 +105,7 @@ export function ReadingLogView({ services }: ReadingLogViewProps) {
   };
 
   const handleOpenUrl = async (item: ReadingLogItem) => {
+    setMessage(undefined);
     try {
       await services.browser.openSavedUrl(item.page.originalUrl);
     } catch (openError) {
@@ -116,23 +118,28 @@ export function ReadingLogView({ services }: ReadingLogViewProps) {
       return;
     }
 
+    setMessage(undefined);
+
     if (dialog.mode === 'edit') {
       await services.updateReadingEntry.execute({
         readingEntryId: dialog.item.readingEntry.id,
         reflection,
         noTakeaway,
       });
-      setMessage('振り返りを更新しました。');
     } else {
       await services.recordReread.execute({
         readingEntryId: dialog.item.readingEntry.id,
         reflection,
         noTakeaway,
       });
-      setMessage('再読を記録しました。');
     }
 
     await loadItems();
+    setMessage(
+      dialog.mode === 'edit'
+        ? '振り返りを更新しました。'
+        : '再読を記録しました。',
+    );
     closeDialog();
   };
 
@@ -141,12 +148,15 @@ export function ReadingLogView({ services }: ReadingLogViewProps) {
       return;
     }
 
+    setMessage(undefined);
+
     try {
       await services.deleteReadingEntry.execute(deleteItem.readingEntry.id);
-      setMessage('読書記録を削除しました。');
       await loadItems();
+      setMessage('読書記録を削除しました。');
       closeDelete();
     } catch (deleteError) {
+      setMessage(undefined);
       setError(getErrorMessage(deleteError, '削除'));
       closeDelete();
     }

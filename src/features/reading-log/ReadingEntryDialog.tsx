@@ -36,7 +36,7 @@ export function ReadingEntryDialog({
         {item.page.title || item.page.siteName}
       </p>
       <p className="inbox-dialog-date">
-        読了日：{formatDisplayDateTime(item.readingEntry.completedAt)}
+        前回の読了日：{formatDisplayDateTime(item.readingEntry.completedAt)}
       </p>
       <ReflectionForm
         reflectionId="reading-entry-reflection"
