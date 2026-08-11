@@ -1,20 +1,13 @@
-import {
-  CapturePageToInbox,
-  GetPageStatus,
-  createUseCaseDependencies,
-} from '../../application/use-cases';
-import { createCryptoIdGenerator, createSystemClock } from '../../domain/ports';
+import { CapturePageToInbox, GetPageStatus } from '../../application/use-cases';
 import {
   createWxtBrowserGateway,
   type BrowserGateway,
 } from '../../infrastructure/browser';
 import {
-  createDexieRepositorySet,
   createYomiatoDatabase,
-  DexieRepositoryTransaction,
-  DexieSchemaVersionProvider,
   type YomiatoDatabase,
 } from '../../infrastructure/db';
+import { createFeatureUseCaseDependencies } from '../runtime/application-dependencies';
 import type { PopupServices } from './popup-services';
 
 export interface PopupRuntime extends PopupServices {
@@ -25,13 +18,7 @@ export interface PopupRuntime extends PopupServices {
 export function createPopupRuntime(): PopupRuntime {
   const database = createYomiatoDatabase();
   const browser = createWxtBrowserGateway();
-  const dependencies = createUseCaseDependencies({
-    repositories: createDexieRepositorySet(database),
-    transaction: new DexieRepositoryTransaction(database),
-    clock: createSystemClock(),
-    idGenerator: createCryptoIdGenerator(),
-    schemaVersionProvider: new DexieSchemaVersionProvider(database),
-  });
+  const dependencies = createFeatureUseCaseDependencies(database);
 
   return {
     database,
