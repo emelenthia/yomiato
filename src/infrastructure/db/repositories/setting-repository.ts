@@ -5,17 +5,15 @@ import type { Setting } from '../../../domain/entities';
 export class DexieSettingRepository implements SettingRepository {
   constructor(private readonly table: Table<Setting, string>) {}
 
-  getByKey<TValue = unknown>(
-    key: string,
-  ): Promise<Setting<TValue> | undefined> {
-    return this.table.get(key) as Promise<Setting<TValue> | undefined>;
+  getByKey(key: string): Promise<Setting | undefined> {
+    return this.table.get(key);
   }
 
   list(): Promise<ReadonlyArray<Setting>> {
     return this.table.toArray();
   }
 
-  async put<TValue>(setting: Setting<TValue>): Promise<void> {
+  async put(setting: Setting): Promise<void> {
     await this.table.put(setting);
   }
 

@@ -8,10 +8,6 @@ export class DexieDismissalEntryRepository implements DismissalEntryRepository {
     private readonly table: Table<DismissalEntry, DismissalEntryId>,
   ) {}
 
-  getById(id: DismissalEntryId): Promise<DismissalEntry | undefined> {
-    return this.table.get(id);
-  }
-
   listByPageId(pageId: PageId): Promise<ReadonlyArray<DismissalEntry>> {
     return this.table.where('pageId').equals(pageId).toArray();
   }
@@ -22,10 +18,6 @@ export class DexieDismissalEntryRepository implements DismissalEntryRepository {
 
   async add(entry: DismissalEntry): Promise<void> {
     await this.table.add(entry);
-  }
-
-  async update(entry: DismissalEntry): Promise<void> {
-    await this.table.put(entry);
   }
 
   async deleteById(id: DismissalEntryId): Promise<void> {

@@ -168,12 +168,9 @@ describe('Dexie Repository', () => {
         ...readingEntry,
         reflection: '更新後の振り返り',
       };
-      const updatedDismissalEntry = { ...dismissalEntry, reason: '理由変更' };
-
       await repositories.pages.update(updatedPage);
       await repositories.inboxItems.update(updatedInboxItem);
       await repositories.readingEntries.update(updatedReadingEntry);
-      await repositories.dismissalEntries.update(updatedDismissalEntry);
       await repositories.settings.put({ key: 'theme', value: 'dark' });
 
       expect(await repositories.pages.getById(page.id)).toEqual(updatedPage);
@@ -183,9 +180,6 @@ describe('Dexie Repository', () => {
       expect(
         await repositories.readingEntries.getById(readingEntry.id),
       ).toEqual(updatedReadingEntry);
-      expect(
-        await repositories.dismissalEntries.getById(dismissalEntry.id),
-      ).toEqual(updatedDismissalEntry);
       expect(await repositories.settings.getByKey('theme')).toEqual({
         key: 'theme',
         value: 'dark',

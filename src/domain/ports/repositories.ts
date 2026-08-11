@@ -44,19 +44,17 @@ export interface ReadingEntryRepository {
 }
 
 export interface DismissalEntryRepository {
-  getById(id: DismissalEntryId): Promise<DismissalEntry | undefined>;
   listByPageId(pageId: PageId): Promise<ReadonlyArray<DismissalEntry>>;
   list(): Promise<ReadonlyArray<DismissalEntry>>;
   add(entry: DismissalEntry): Promise<void>;
-  update(entry: DismissalEntry): Promise<void>;
   deleteById(id: DismissalEntryId): Promise<void>;
   count(): Promise<number>;
 }
 
 export interface SettingRepository {
-  getByKey<TValue = unknown>(key: string): Promise<Setting<TValue> | undefined>;
+  getByKey(key: string): Promise<Setting | undefined>;
   list(): Promise<ReadonlyArray<Setting>>;
-  put<TValue>(setting: Setting<TValue>): Promise<void>;
+  put(setting: Setting): Promise<void>;
   deleteByKey(key: string): Promise<void>;
   count(): Promise<number>;
 }
