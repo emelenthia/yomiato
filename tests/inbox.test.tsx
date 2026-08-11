@@ -1,10 +1,14 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { InboxListItem } from '../src/application/dto';
 import { ApplicationError } from '../src/application/errors';
 import InboxView from '../src/features/inbox/InboxView';
 import type { InboxServices } from '../src/features/inbox/inbox-services';
+import {
+  MAX_DISMISSAL_REASON_LENGTH,
+  MAX_REFLECTION_LENGTH,
+} from '../src/shared/constants/limits';
 
 afterEach(() => cleanup());
 
@@ -92,6 +96,50 @@ describe('工程8のInbox', () => {
     expect(services.listInbox.execute).toHaveBeenLastCalledWith('example.org');
   });
 
+  it('refreshTokenが変わるとタブ取り込み後の一覧を再読み込みする', async () => {
+    const services = createServices();
+    const view = render(<InboxView services={services} refreshToken={0} />);
+
+    await screen.findByRole('heading', { name: '新しい記事' });
+    expect(services.listInbox.execute).toHaveBeenCalledOnce();
+
+    view.rerender(<InboxView services={services} refreshToken={1} />);
+
+    await waitFor(() =>
+      expect(services.listInbox.execute).toHaveBeenCalledTimes(2),
+    );
+  });
+
+  it('読了・断念・削除ダイアログを閉じると起点ボタンへ戻る', async () => {
+    const services = createServices([
+      createItem(
+        'one',
+        '記事',
+        'https://example.com/one',
+        '2026-08-11T00:00:00.000Z',
+      ),
+    ]);
+    const user = userEvent.setup();
+
+    render(<InboxView services={services} />);
+    await screen.findByRole('heading', { name: '記事' });
+
+    const completionTrigger = screen.getByRole('button', { name: '読了' });
+    await user.click(completionTrigger);
+    await user.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await waitFor(() => expect(completionTrigger).toHaveFocus());
+
+    const dismissalTrigger = screen.getByRole('button', { name: '断念' });
+    await user.click(dismissalTrigger);
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(dismissalTrigger).toHaveFocus());
+
+    const deleteTrigger = screen.getByRole('button', { name: '削除' });
+    await user.click(deleteTrigger);
+    await user.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await waitFor(() => expect(deleteTrigger).toHaveFocus());
+  });
+
   it('振り返りなしでは読了せず、入力後はInboxから除去する', async () => {
     const services = createServices();
     const user = userEvent.setup();
@@ -134,6 +182,10 @@ describe('工程8のInbox', () => {
     render(<InboxView services={services} />);
     await screen.findByRole('heading', { name: '記事' });
     await user.click(screen.getByRole('button', { name: '読了' }));
+    expect(screen.getByRole('textbox', { name: '振り返り' })).toHaveAttribute(
+      'maxlength',
+      String(MAX_REFLECTION_LENGTH),
+    );
     const reflection = screen.getByRole('textbox', { name: '振り返り' });
     await user.type(reflection, '入力したまま');
     await user.click(
@@ -165,6 +217,9 @@ describe('工程8のInbox', () => {
     render(<InboxView services={services} />);
     await screen.findByRole('heading', { name: '記事' });
     await user.click(screen.getByRole('button', { name: '断念' }));
+    expect(
+      screen.getByRole('textbox', { name: '断念理由（任意）' }),
+    ).toHaveAttribute('maxlength', String(MAX_DISMISSAL_REASON_LENGTH));
     await user.type(
       screen.getByRole('textbox', { name: '断念理由（任意）' }),
       '今は不要',

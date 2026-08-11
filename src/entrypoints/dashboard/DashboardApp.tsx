@@ -95,6 +95,7 @@ function DashboardApp({ tabImportServices, inboxServices }: DashboardAppProps) {
     getCompletionDraft(window.location.search),
   );
   const [isTabImportOpen, setIsTabImportOpen] = React.useState(false);
+  const [inboxRefreshToken, setInboxRefreshToken] = React.useState(0);
   const tabImportTriggerRef = React.useRef<HTMLButtonElement>(null);
   const completionRoute =
     new URLSearchParams(window.location.search).get('view') === 'complete';
@@ -143,6 +144,7 @@ function DashboardApp({ tabImportServices, inboxServices }: DashboardAppProps) {
 
   const handleTabImportClose = () => {
     setIsTabImportOpen(false);
+    setInboxRefreshToken((current) => current + 1);
     window.setTimeout(() => tabImportTriggerRef.current?.focus(), 0);
   };
 
@@ -222,7 +224,10 @@ function DashboardApp({ tabImportServices, inboxServices }: DashboardAppProps) {
             </div>
           ) : null}
           {activeView === 'inbox' && inboxServices ? (
-            <InboxView services={inboxServices} />
+            <InboxView
+              services={inboxServices}
+              refreshToken={inboxRefreshToken}
+            />
           ) : (
             <EmptyState
               title={selectedView.emptyTitle}

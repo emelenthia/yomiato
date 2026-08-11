@@ -2,6 +2,7 @@ import React from 'react';
 import type { InboxListItem } from '../../application/dto';
 import { ApplicationError } from '../../application/errors';
 import { Button } from '../../components/Button';
+import { MAX_REFLECTION_LENGTH } from '../../shared/constants/limits';
 import { formatDisplayDateTime } from '../../shared/utils/date-time';
 import { ModalDialog } from './ModalDialog';
 
@@ -93,7 +94,7 @@ export function CompletionDialog({
           aria-describedby="completion-reflection-help"
           value={reflection}
           onChange={(event) => setReflection(event.target.value)}
-          maxLength={5000}
+          maxLength={MAX_REFLECTION_LENGTH}
           rows={5}
           disabled={isSaving}
         />

@@ -2,6 +2,7 @@ import React from 'react';
 import type { InboxListItem } from '../../application/dto';
 import { ApplicationError } from '../../application/errors';
 import { Button } from '../../components/Button';
+import { MAX_DISMISSAL_REASON_LENGTH } from '../../shared/constants/limits';
 import { ModalDialog } from './ModalDialog';
 
 type DismissalDialogProps = {
@@ -78,7 +79,7 @@ export function DismissalDialog({
           id="dismissal-reason"
           value={reason}
           onChange={(event) => setReason(event.target.value)}
-          maxLength={1000}
+          maxLength={MAX_DISMISSAL_REASON_LENGTH}
           rows={4}
           disabled={isSaving}
         />

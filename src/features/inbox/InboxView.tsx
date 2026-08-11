@@ -12,6 +12,7 @@ import type { InboxServices } from './inbox-services';
 
 export type InboxViewProps = {
   services: InboxServices;
+  refreshToken?: number;
 };
 
 function getErrorMessage(error: unknown, action = '読み込み'): string {
@@ -33,7 +34,7 @@ function itemLabel(item: InboxListItem): string {
   return item.page.title || item.page.siteName;
 }
 
-export function InboxView({ services }: InboxViewProps) {
+export function InboxView({ services, refreshToken = 0 }: InboxViewProps) {
   const [search, setSearch] = React.useState('');
   const [items, setItems] = React.useState<ReadonlyArray<InboxListItem>>();
   const [isLoading, setIsLoading] = React.useState(true);
@@ -43,6 +44,10 @@ export function InboxView({ services }: InboxViewProps) {
   const [dismissalItem, setDismissalItem] = React.useState<InboxListItem>();
   const [deleteItem, setDeleteItem] = React.useState<InboxListItem>();
   const requestIdRef = React.useRef(0);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const completionTriggerRef = React.useRef<HTMLButtonElement>(null);
+  const dismissalTriggerRef = React.useRef<HTMLButtonElement>(null);
+  const deleteTriggerRef = React.useRef<HTMLButtonElement>(null);
 
   const loadItems = React.useCallback(async () => {
     const requestId = ++requestIdRef.current;
@@ -67,7 +72,34 @@ export function InboxView({ services }: InboxViewProps) {
 
   React.useEffect(() => {
     void loadItems();
-  }, [loadItems]);
+  }, [loadItems, refreshToken]);
+
+  const restoreFocus = (
+    triggerRef: React.RefObject<HTMLButtonElement | null>,
+  ) => {
+    window.setTimeout(() => {
+      if (triggerRef.current?.isConnected) {
+        triggerRef.current.focus();
+      } else {
+        searchInputRef.current?.focus();
+      }
+    }, 0);
+  };
+
+  const closeCompletion = () => {
+    setCompletionItem(undefined);
+    restoreFocus(completionTriggerRef);
+  };
+
+  const closeDismissal = () => {
+    setDismissalItem(undefined);
+    restoreFocus(dismissalTriggerRef);
+  };
+
+  const closeDelete = () => {
+    setDeleteItem(undefined);
+    restoreFocus(deleteTriggerRef);
+  };
 
   const handleOpenUrl = async (item: InboxListItem) => {
     try {
@@ -87,9 +119,9 @@ export function InboxView({ services }: InboxViewProps) {
       reflection,
       noTakeaway,
     });
-    setCompletionItem(undefined);
     setMessage('読了として記録しました。');
     await loadItems();
+    closeCompletion();
   };
 
   const handleDismiss = async (reason: string) => {
@@ -101,9 +133,9 @@ export function InboxView({ services }: InboxViewProps) {
       inboxItemId: dismissalItem.inboxItem.id,
       reason,
     });
-    setDismissalItem(undefined);
     setMessage('Inboxから断念として記録しました。');
     await loadItems();
+    closeDismissal();
   };
 
   const handleDelete = async () => {
@@ -113,12 +145,12 @@ export function InboxView({ services }: InboxViewProps) {
 
     try {
       await services.deleteInboxItem.execute(deleteItem.inboxItem.id);
-      setDeleteItem(undefined);
       setMessage('Inboxから削除しました。');
       await loadItems();
+      closeDelete();
     } catch (deleteError) {
-      setDeleteItem(undefined);
       setError(getErrorMessage(deleteError, '削除'));
+      closeDelete();
     }
   };
 
@@ -144,6 +176,7 @@ export function InboxView({ services }: InboxViewProps) {
             Inboxを検索
           </label>
           <input
+            ref={searchInputRef}
             id="inbox-search"
             className="inbox-search"
             type="search"
@@ -203,14 +236,29 @@ export function InboxView({ services }: InboxViewProps) {
                   <Button
                     type="button"
                     variant="primary"
-                    onClick={() => setCompletionItem(item)}
+                    onClick={(event) => {
+                      completionTriggerRef.current = event.currentTarget;
+                      setCompletionItem(item);
+                    }}
                   >
                     読了
                   </Button>
-                  <Button type="button" onClick={() => setDismissalItem(item)}>
+                  <Button
+                    type="button"
+                    onClick={(event) => {
+                      dismissalTriggerRef.current = event.currentTarget;
+                      setDismissalItem(item);
+                    }}
+                  >
                     断念
                   </Button>
-                  <Button type="button" onClick={() => setDeleteItem(item)}>
+                  <Button
+                    type="button"
+                    onClick={(event) => {
+                      deleteTriggerRef.current = event.currentTarget;
+                      setDeleteItem(item);
+                    }}
+                  >
                     削除
                   </Button>
                 </div>
@@ -223,14 +271,14 @@ export function InboxView({ services }: InboxViewProps) {
       {completionItem ? (
         <CompletionDialog
           item={completionItem}
-          onClose={() => setCompletionItem(undefined)}
+          onClose={closeCompletion}
           onSave={handleComplete}
         />
       ) : null}
       {dismissalItem ? (
         <DismissalDialog
           item={dismissalItem}
-          onClose={() => setDismissalItem(undefined)}
+          onClose={closeDismissal}
           onSave={handleDismiss}
         />
       ) : null}
@@ -238,7 +286,7 @@ export function InboxView({ services }: InboxViewProps) {
         <ConfirmDialog
           title="Inboxから削除しますか"
           description={`${itemLabel(deleteItem)}をInboxから削除します。断念履歴は残りません。`}
-          onClose={() => setDeleteItem(undefined)}
+          onClose={closeDelete}
           onConfirm={handleDelete}
         />
       ) : null}
