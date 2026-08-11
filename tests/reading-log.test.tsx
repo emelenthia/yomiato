@@ -1,4 +1,10 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReadingLogItem } from '../src/application/dto';
@@ -127,6 +133,9 @@ describe('工程9の読書ログ', () => {
     await screen.findByText('既存の振り返り');
     await user.click(screen.getByRole('button', { name: '編集' }));
 
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText(/読了日：/)).toBeVisible();
+    expect(within(dialog).queryByText(/前回の読了日/)).not.toBeInTheDocument();
     const reflection = screen.getByRole('textbox', { name: '振り返り' });
     expect(reflection).toHaveValue('既存の振り返り');
     await user.clear(reflection);
