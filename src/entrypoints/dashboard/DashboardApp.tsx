@@ -3,8 +3,7 @@ import './DashboardApp.css';
 import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
 import { parseAndNormalizeUrl } from '../../domain/values/url';
-import { MAX_TITLE_LENGTH } from '../../shared/constants/limits';
-import { trimText } from '../../shared/utils/text';
+import { normalizeTitle } from '../../shared/utils/text';
 
 export const dashboardViews = [
   {
@@ -65,14 +64,7 @@ export function getCompletionDraft(
 
   try {
     const parsedUrl = parseAndNormalizeUrl(url);
-    const normalizedTitle = trimText(title);
-
-    if (
-      normalizedTitle.length === 0 ||
-      Array.from(normalizedTitle).length > MAX_TITLE_LENGTH
-    ) {
-      return undefined;
-    }
+    const normalizedTitle = normalizeTitle(title, parsedUrl.siteName);
 
     return { url: parsedUrl.originalUrl, title: normalizedTitle };
   } catch {

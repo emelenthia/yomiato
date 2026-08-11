@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import PopupApp from '../src/entrypoints/popup/PopupApp';
 import DashboardApp, {
+  getCompletionDraft,
   getDashboardView,
 } from '../src/entrypoints/dashboard/DashboardApp';
 import { DashboardErrorBoundary } from '../src/entrypoints/dashboard/DashboardErrorBoundary';
@@ -49,6 +50,27 @@ describe('工程5のDashboard', () => {
       screen.queryByRole('heading', { name: '読了として記録' }),
     ).not.toBeInTheDocument();
     expect(window.location.search).toBe('?view=inbox');
+  });
+
+  it('直接読了のtitleを上限まで切り詰め、空titleはsiteNameへフォールバックする', () => {
+    const longTitle = 'あ'.repeat(1_001);
+
+    expect(
+      getCompletionDraft(
+        `?view=complete&url=https%3A%2F%2Fexample.com%2Farticle&title=${encodeURIComponent(longTitle)}`,
+      ),
+    ).toEqual({
+      url: 'https://example.com/article',
+      title: 'あ'.repeat(1_000),
+    });
+    expect(
+      getCompletionDraft(
+        '?view=complete&url=https%3A%2F%2Fexample.com%2Farticle&title=',
+      ),
+    ).toEqual({
+      url: 'https://example.com/article',
+      title: 'example.com',
+    });
   });
 
   it('Inboxの空状態を表示できる', () => {

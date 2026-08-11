@@ -148,6 +148,8 @@ describe('工程6のPopup', () => {
     const button = await screen.findByRole('button', { name: '後で読む' });
 
     await user.click(button);
+    expect(button).toBeDisabled();
+    expect(screen.getByRole('status')).toHaveTextContent('保存しています。');
     await user.click(button);
     expect(services.capturePageToInbox.execute).toHaveBeenCalledTimes(1);
 

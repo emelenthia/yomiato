@@ -87,6 +87,7 @@ function PopupApp({ services, initializationError }: PopupAppProps) {
       ? { phase: 'error', message: initializationError }
       : { phase: 'loading' },
   );
+  const [isSaving, setIsSaving] = React.useState(false);
   const savingRef = React.useRef(false);
 
   React.useEffect(() => {
@@ -159,6 +160,7 @@ function PopupApp({ services, initializationError }: PopupAppProps) {
     }
 
     savingRef.current = true;
+    setIsSaving(true);
     try {
       await services.capturePageToInbox.execute({
         url: state.tab.url,
@@ -190,6 +192,7 @@ function PopupApp({ services, initializationError }: PopupAppProps) {
       );
     } finally {
       savingRef.current = false;
+      setIsSaving(false);
     }
   };
 
@@ -273,7 +276,7 @@ function PopupApp({ services, initializationError }: PopupAppProps) {
       <div className="action-stack">
         <button
           type="button"
-          disabled={!isReady || state.inboxRegistered || savingRef.current}
+          disabled={!isReady || state.inboxRegistered || isSaving}
           onClick={() => void handleCapture()}
         >
           後で読む
@@ -289,11 +292,13 @@ function PopupApp({ services, initializationError }: PopupAppProps) {
       </div>
 
       <p className="status" role="status" aria-live="polite">
-        {isReady && state.message
-          ? state.message
-          : state.phase === 'error' || state.phase === 'unavailable'
+        {isSaving
+          ? '保存しています。'
+          : isReady && state.message
             ? state.message
-            : ''}
+            : state.phase === 'error' || state.phase === 'unavailable'
+              ? state.message
+              : ''}
       </p>
 
       <button
