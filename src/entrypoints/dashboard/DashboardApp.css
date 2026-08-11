@@ -530,6 +530,104 @@ nav {
   gap: var(--space-2);
 }
 
+.settings-view {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+}
+
+.settings-section {
+  display: grid;
+  gap: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  background: var(--color-background);
+}
+
+.settings-section h3,
+.settings-section p {
+  margin: 0;
+}
+
+.settings-section p {
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.settings-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.settings-summary div {
+  min-width: 140px;
+}
+
+.settings-summary dt {
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.settings-summary dd {
+  margin: var(--space-2) 0 0;
+  font-weight: 700;
+}
+
+.settings-file-label {
+  width: fit-content;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-4);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.settings-file-label:hover {
+  border-color: var(--color-accent);
+}
+
+.settings-section input[type='file'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.settings-file-label:focus-within,
+.settings-section input[type='file']:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.settings-danger {
+  border-color: var(--color-error-border);
+}
+
+.settings-dialog-count {
+  margin: var(--space-4) 0 0;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.settings-confirmation-input {
+  width: 100%;
+  margin-top: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  color: var(--color-text);
+  background: var(--color-background);
+  font: inherit;
+}
+
 @media (min-width: 680px) {
   .inbox-card {
     grid-template-columns: minmax(0, 1fr) auto;
