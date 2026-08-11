@@ -48,7 +48,7 @@ jobs:
 
       - name: Run end-to-end tests
         id: e2e
-        run: npm run test:e2e
+        run: npx playwright test
 
       - name: Upload Playwright traces
         if: ${{ failure() && steps.e2e.outcome == 'failure' }}
