@@ -100,6 +100,25 @@ describe('工程7の複数タブ取り込み', () => {
     expect(dialog).toBeInTheDocument();
   });
 
+  it('ビューのpopstateでパネルを閉じ、背景の不活性化を解除する', async () => {
+    const user = userEvent.setup();
+
+    render(<DashboardApp tabImportServices={createServices()} />);
+    await user.click(screen.getByRole('button', { name: '読書ログ' }));
+    await user.click(screen.getByRole('button', { name: 'Inbox' }));
+    await user.click(
+      screen.getByRole('button', { name: '複数タブを取り込む' }),
+    );
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    window.history.back();
+    fireEvent.popState(window);
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('navigation')).not.toHaveAttribute('inert');
+    expect(screen.getByRole('button', { name: '読書ログ' })).toBeEnabled();
+  });
+
   it('一覧の読み込み後にタブ選択へフォーカスを移す', async () => {
     const services = createServices({
       browser: {

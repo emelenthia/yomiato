@@ -114,6 +114,7 @@ function DashboardApp({ tabImportServices }: DashboardAppProps) {
   React.useEffect(() => {
     const handlePopState = () => {
       setActiveView(getDashboardView(window.location.search));
+      setIsTabImportOpen(false);
     };
 
     window.addEventListener('popstate', handlePopState);
