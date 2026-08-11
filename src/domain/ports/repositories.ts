@@ -19,6 +19,7 @@ export interface PageRepository {
   add(page: Page): Promise<void>;
   update(page: Page): Promise<void>;
   deleteById(id: PageId): Promise<void>;
+  isReferenced(id: PageId): Promise<boolean>;
   count(): Promise<number>;
 }
 
@@ -43,9 +44,11 @@ export interface ReadingEntryRepository {
 }
 
 export interface DismissalEntryRepository {
+  getById(id: DismissalEntryId): Promise<DismissalEntry | undefined>;
   listByPageId(pageId: PageId): Promise<ReadonlyArray<DismissalEntry>>;
   list(): Promise<ReadonlyArray<DismissalEntry>>;
   add(entry: DismissalEntry): Promise<void>;
+  update(entry: DismissalEntry): Promise<void>;
   deleteById(id: DismissalEntryId): Promise<void>;
   count(): Promise<number>;
 }
