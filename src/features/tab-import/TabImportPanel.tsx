@@ -67,6 +67,39 @@ function TabImportPanel({ services, onClose }: TabImportPanelProps) {
   >();
   const importingRef = React.useRef(false);
   const loadingRef = React.useRef(false);
+  const panelRef = React.useRef<HTMLElement>(null);
+
+  React.useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) {
+      return;
+    }
+
+    if (state.phase === 'loaded' || state.phase === 'error') {
+      const firstInput = panel.querySelector<HTMLElement>(
+        'input:not([disabled])',
+      );
+      const firstButton = panel.querySelector<HTMLElement>(
+        'button:not([disabled])',
+      );
+      (firstInput ?? firstButton ?? panel).focus();
+      return;
+    }
+
+    panel.focus();
+  }, [state.phase]);
+
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !isImporting) {
+        event.preventDefault();
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isImporting, onClose]);
 
   const loadTabs = async () => {
     if (loadingRef.current) {
@@ -188,7 +221,14 @@ function TabImportPanel({ services, onClose }: TabImportPanelProps) {
   };
 
   return (
-    <section className="tab-import-panel" aria-labelledby="tab-import-heading">
+    <section
+      className="tab-import-panel"
+      ref={panelRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tab-import-heading"
+      tabIndex={-1}
+    >
       <div className="tab-import-header">
         <div>
           <p className="eyebrow">複数タブ取り込み</p>

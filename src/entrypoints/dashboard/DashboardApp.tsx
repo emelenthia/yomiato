@@ -92,6 +92,7 @@ function DashboardApp({ tabImportServices }: DashboardAppProps) {
     getCompletionDraft(window.location.search),
   );
   const [isTabImportOpen, setIsTabImportOpen] = React.useState(false);
+  const tabImportTriggerRef = React.useRef<HTMLButtonElement>(null);
   const completionRoute =
     new URLSearchParams(window.location.search).get('view') === 'complete';
 
@@ -134,6 +135,11 @@ function DashboardApp({ tabImportServices }: DashboardAppProps) {
     setCompletionDraft(undefined);
     setIsTabImportOpen(false);
     setActiveView(view);
+  };
+
+  const handleTabImportClose = () => {
+    setIsTabImportOpen(false);
+    window.setTimeout(() => tabImportTriggerRef.current?.focus(), 0);
   };
 
   return (
@@ -193,12 +199,13 @@ function DashboardApp({ tabImportServices }: DashboardAppProps) {
               {isTabImportOpen ? (
                 <TabImportPanel
                   services={tabImportServices}
-                  onClose={() => setIsTabImportOpen(false)}
+                  onClose={handleTabImportClose}
                 />
               ) : (
                 <Button
                   type="button"
                   variant="primary"
+                  ref={tabImportTriggerRef}
                   onClick={() => setIsTabImportOpen(true)}
                 >
                   複数タブを取り込む
