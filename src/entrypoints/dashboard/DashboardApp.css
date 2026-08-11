@@ -284,6 +284,199 @@ nav {
   min-height: 100vh;
 }
 
+.inbox-view {
+  margin-top: var(--space-8);
+}
+
+.inbox-toolbar {
+  display: grid;
+  grid-template-columns: 1fr minmax(180px, 280px);
+  align-items: end;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.inbox-count {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+}
+
+.inbox-search-label {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.inbox-search {
+  grid-column: 2;
+  grid-row: 1;
+  margin-top: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  color: var(--color-text);
+  background: var(--color-background);
+  font: inherit;
+}
+
+.inbox-search:focus-visible,
+.inbox-dialog textarea:focus-visible,
+.inbox-dialog input:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.inbox-list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.inbox-card {
+  display: grid;
+  gap: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  background: var(--color-background);
+}
+
+.inbox-card h3 {
+  overflow-wrap: anywhere;
+}
+
+.inbox-card-meta,
+.inbox-card-url,
+.inbox-dialog-page-title,
+.inbox-dialog-date,
+.inbox-field-help {
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.inbox-card-meta,
+.inbox-card-url,
+.inbox-dialog-page-title,
+.inbox-dialog-date {
+  margin: var(--space-2) 0 0;
+}
+
+.inbox-card-url {
+  overflow-wrap: anywhere;
+  font-size: var(--font-size-sm);
+}
+
+.inbox-card-actions,
+.inbox-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.inbox-success {
+  margin: 0 0 var(--space-4);
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.inbox-error-area {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.inbox-error-area .error-message {
+  flex: 1 1 300px;
+  margin: 0;
+}
+
+.inbox-dialog {
+  position: fixed;
+  z-index: 2;
+  inset: 50% auto auto 50%;
+  width: min(100% - (var(--space-6) * 2), 640px);
+  max-height: calc(100vh - (var(--space-6) * 2));
+  overflow: auto;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  background: var(--color-surface);
+  box-shadow: 0 20px 60px rgb(15 23 42 / 20%);
+}
+
+.inbox-dialog::before {
+  position: fixed;
+  z-index: -1;
+  inset: 50% auto auto 50%;
+  width: 100vw;
+  height: 100vh;
+  content: '';
+  transform: translate(-50%, -50%);
+  background: rgb(15 23 42 / 45%);
+}
+
+.inbox-dialog-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.inbox-dialog form {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.inbox-field-label {
+  font-weight: 700;
+}
+
+.inbox-field-help {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.inbox-dialog textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  color: var(--color-text);
+  background: var(--color-background);
+  font: inherit;
+}
+
+.inbox-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.inbox-dialog-error {
+  margin: 0;
+  color: var(--color-error-text);
+  font-weight: 700;
+}
+
+@media (min-width: 680px) {
+  .inbox-card {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .inbox-card-actions {
+    justify-content: end;
+  }
+}
+
 @media (max-width: 720px) {
   .dashboard-header {
     align-items: start;
@@ -296,6 +489,20 @@ nav {
 
   .view-panel {
     padding: var(--space-6);
+  }
+
+  .inbox-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .inbox-search-label,
+  .inbox-search {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .inbox-search {
+    margin-top: calc(var(--space-4) * -1);
   }
 
   .tab-import-header,
