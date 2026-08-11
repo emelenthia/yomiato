@@ -10,6 +10,8 @@ import InboxView from '../../features/inbox/InboxView';
 import type { InboxServices } from '../../features/inbox/inbox-services';
 import ReadingLogView from '../../features/reading-log/ReadingLogView';
 import type { ReadingLogServices } from '../../features/reading-log/reading-log-services';
+import SettingsView from '../../features/settings/SettingsView';
+import type { SettingsServices } from '../../features/settings/settings-services';
 
 export const dashboardViews = [
   {
@@ -48,6 +50,7 @@ export interface DashboardAppProps {
   tabImportServices?: TabImportServices;
   inboxServices?: InboxServices;
   readingLogServices?: ReadingLogServices;
+  settingsServices?: SettingsServices;
 }
 
 export function getDashboardView(search: string): DashboardViewId {
@@ -94,6 +97,7 @@ function DashboardApp({
   tabImportServices,
   inboxServices,
   readingLogServices,
+  settingsServices,
 }: DashboardAppProps) {
   const [activeView, setActiveView] = React.useState<DashboardViewId>(() =>
     getDashboardView(window.location.search),
@@ -103,6 +107,7 @@ function DashboardApp({
   );
   const [isTabImportOpen, setIsTabImportOpen] = React.useState(false);
   const [inboxRefreshToken, setInboxRefreshToken] = React.useState(0);
+  const [dataRefreshToken, setDataRefreshToken] = React.useState(0);
   const tabImportTriggerRef = React.useRef<HTMLButtonElement>(null);
   const completionRoute =
     new URLSearchParams(window.location.search).get('view') === 'complete';
@@ -236,7 +241,19 @@ function DashboardApp({
               refreshToken={inboxRefreshToken}
             />
           ) : activeView === 'log' && readingLogServices ? (
-            <ReadingLogView services={readingLogServices} />
+            <ReadingLogView
+              services={readingLogServices}
+              refreshToken={dataRefreshToken}
+            />
+          ) : activeView === 'settings' && settingsServices ? (
+            <SettingsView
+              services={settingsServices}
+              refreshToken={dataRefreshToken}
+              onDataChanged={() => {
+                setDataRefreshToken((current) => current + 1);
+                setInboxRefreshToken((current) => current + 1);
+              }}
+            />
           ) : (
             <EmptyState
               title={selectedView.emptyTitle}

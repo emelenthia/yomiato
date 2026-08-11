@@ -14,6 +14,7 @@ import type { ReadingLogServices } from './reading-log-services';
 
 export type ReadingLogViewProps = {
   services: ReadingLogServices;
+  refreshToken?: number;
 };
 
 function getErrorMessage(error: unknown, action = '読み込み'): string {
@@ -41,7 +42,10 @@ function reflectionLabel(item: ReadingLogItem): string {
     : item.readingEntry.reflection;
 }
 
-export function ReadingLogView({ services }: ReadingLogViewProps) {
+export function ReadingLogView({
+  services,
+  refreshToken = 0,
+}: ReadingLogViewProps) {
   const [search, setSearch] = React.useState('');
   const [items, setItems] = React.useState<ReadonlyArray<ReadingLogItem>>();
   const [isLoading, setIsLoading] = React.useState(true);
@@ -80,7 +84,7 @@ export function ReadingLogView({ services }: ReadingLogViewProps) {
 
   React.useEffect(() => {
     void loadItems();
-  }, [loadItems]);
+  }, [loadItems, refreshToken]);
 
   const restoreFocus = (
     triggerRef: React.RefObject<HTMLButtonElement | null>,
