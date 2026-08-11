@@ -10,14 +10,15 @@ related: [[Projects/yomiato]]
 
 工程13の順序で次の確認を実行する。
 
-1. `npm run format:check` — 全ファイルがPrettierのチェックに成功
-2. `npm run lint` — ESLintが成功
-3. `npm run typecheck` — TypeScriptの型検査が成功
-4. `npm test` — 11ファイル、108件が成功
-5. `npm run build` — Manifestを含む15ファイル、合計430.26 kBの生成に成功
-6. `npm run test:e2e` — MVPの8シナリオが成功
-7. `npm run zip` — `yomiato-0.0.0-chrome.zip`（134.32 kB）の生成に成功
-8. `npm run verify:release` — Manifest、権限、生成物15ファイル、ZIP内容の検証に成功
+1. `pnpm audit --audit-level=low` — 依存関係の脆弱性0件
+2. `pnpm run format:check` — 全ファイルがPrettierのチェックに成功
+3. `pnpm run lint` — ESLintが成功
+4. `pnpm run typecheck` — TypeScriptの型検査が成功
+5. `pnpm test` — 11ファイル、108件が成功
+6. `pnpm run build` — Manifestを含む15ファイル、合計430.26 kBの生成に成功
+7. `pnpm run test:e2e` — MVPの8シナリオが成功
+8. `pnpm run zip` — `yomiato-0.0.0-chrome.zip`（134.32 kB）の生成に成功
+9. `pnpm run verify:release` — Manifest、権限、生成物15ファイル、ZIP内容の検証に成功
 
 `verify:release` は、生成されたManifestがManifest V3であること、`activeTab`と`tabs`以外の権限がないこと、host permissions・Content Script・外部接続設定・`optional_host_permissions`・`content_security_policy`がないことを確認する。生成HTML・CSSの外部アセット参照、生成JavaScriptの実行時ネットワークAPI、inline script、source map、`eval`、動的関数生成、テストやdocsの混入も確認し、ZIPが生成ディレクトリと同じ内容であることを検証する。WXTの既知のブラウザ互換チャンクに含まれるAPI文字列だけは許可し、それ以外の生成JavaScriptで検出した場合は失敗させる。
 

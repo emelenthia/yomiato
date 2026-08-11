@@ -3,6 +3,7 @@
   "description": "後で読みたいページを集め、読んだら一言を残せるローカル保存の読書ログ",
   "private": true,
   "version": "0.0.0",
+  "packageManager": "pnpm@10.33.0",
   "type": "module",
   "scripts": {
     "dev": "wxt",
@@ -13,7 +14,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "npm run build && playwright test",
+    "test:e2e": "pnpm run build && playwright test",
     "verify:release": "node scripts/verify-release.mjs",
     "postinstall": "wxt prepare"
   },
@@ -29,6 +30,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.3",
+    "@types/node": "^24.13.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@wxt-dev/module-react": "^1.1.5",
@@ -40,8 +42,7 @@
     "prettier": "^3.9.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.66.0",
-    "vitest": "^2.1.9",
-    "web-ext": "^10.5.0",
+    "vitest": "^4.1.10",
     "wxt": "^0.21.3"
   }
 }

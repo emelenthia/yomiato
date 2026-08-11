@@ -144,8 +144,8 @@
 ### 5.1 実行環境
 
 - Node.js: 24系LTSを基準とし、`.nvmrc`へメジャーバージョンを記録する。
-- パッケージ管理: npm。
-- ロックファイル: `package-lock.json`を必ず保存する。
+- パッケージ管理: pnpm。
+- ロックファイル: `pnpm-lock.yaml`を必ず保存する。
 - ブラウザ: 実装時点のStable版Google Chromeを主対象とする。
 
 ### 5.2 本番依存
@@ -178,9 +178,9 @@ TypeScript型定義やWXTテンプレートが必要とする補助依存は追�
 
 ### 5.4 バージョンの扱い
 
-- 実装開始時点の安定版をnpmから取得する。
+- 実装開始時点の安定版をpnpmから取得する。
 - プレリリース版、beta、canaryを使用しない。
-- 実際に解決された正確なバージョンは`package-lock.json`で固定する。
+- 実際に解決された正確なバージョンは`pnpm-lock.yaml`で固定する。
 - メジャーバージョンを変更するときは、全品質ゲートとデータ移行テストを実行する。
 
 ## 6. 最終フォルダ構成
@@ -244,7 +244,7 @@ yomiato/
 ├─ .nvmrc
 ├─ eslint.config.js
 ├─ package.json
-├─ package-lock.json
+├─ pnpm-lock.yaml
 ├─ playwright.config.ts
 ├─ prettier.config.js
 ├─ tsconfig.json
@@ -563,14 +563,14 @@ Dexieのlive queryから呼び出す場合も、並び順や検索規則をReact
 
 1. Gitの状態と既存ファイルを確認する。
 2. Node.js 24系を使用し、`.nvmrc`を作る。
-3. WXTの公式initializerでReact + TypeScript構成を用意する。本リポジトリは空ではないため、rootで直接initializerを実行しない。一時ディレクトリ内で`npx wxt@latest init`を実行し、対話では一時的なproject name、Reactテンプレート、npmを選ぶ。生成された設定、package、React entrypointを内容確認のうえ本リポジトリへ移し、既存のREADME、docs、`.git`を上書きしない。移した後に一時ディレクトリを削除する。
-4. npmで依存関係を導入し、lockfileを生成する。
+3. WXTの公式initializerでReact + TypeScript構成を用意する。本リポジトリは空ではないため、rootで直接initializerを実行しない。一時ディレクトリ内で`pnpm dlx wxt@latest init`を実行し、対話では一時的なproject name、Reactテンプレート、pnpmを選ぶ。生成された設定、package、React entrypointを内容確認のうえ本リポジトリへ移し、既存のREADME、docs、`.git`を上書きしない。移した後に一時ディレクトリを削除する。
+4. pnpmで依存関係を導入し、lockfileを生成する。
 5. `srcDir`を`src`に設定する。
 6. Chrome Manifest V3を対象にする。
-7. npm scriptsとして`dev`、`build`、`zip`、`format`、`format:check`、`lint`、`typecheck`、`test`、`test:e2e`を用意する。
+7. pnpm scriptsとして`dev`、`build`、`zip`、`format`、`format:check`、`lint`、`typecheck`、`test`、`test:e2e`を用意する。
 8. TypeScript strict、ESLint、Prettier、Vitest、jsdom、fake-indexeddb、Playwrightの設定を作る。
 
-初期化後、本番依存は`npm install react react-dom dexie dexie-react-hooks zod`、不足する開発依存は本書5.3のpackage名を`npm install --save-dev`で追加する。initializerが既に導入したpackageを重複して指定しても、最終的な`package.json`に同じ目的のpackageを複数入れない。
+初期化後、本番依存は`pnpm add react react-dom dexie dexie-react-hooks zod`、不足する開発依存は本書5.3のpackage名を`pnpm add --save-dev`で追加する。initializerが既に導入したpackageを重複して指定しても、最終的な`package.json`に同じ目的のpackageを複数入れない。
 
 ### Manifest初期値
 
@@ -1099,14 +1099,15 @@ MVPでイベント処理が不要なら、WXTが正しくService Workerを生成
 
 順番に実行する。
 
-1. `npm run format:check`
-2. `npm run lint`
-3. `npm run typecheck`
-4. `npm test`
-5. `npm run build`
-6. `npm run test:e2e`
-7. `npm run zip`
-8. `npm run verify:release`
+1. `pnpm audit --audit-level=low`
+2. `pnpm run format:check`
+3. `pnpm run lint`
+4. `pnpm run typecheck`
+5. `pnpm test`
+6. `pnpm run build`
+7. `pnpm run test:e2e`
+8. `pnpm run zip`
+9. `pnpm run verify:release`
 
 ### 生成物確認
 
@@ -1139,13 +1140,14 @@ MVPでイベント処理が不要なら、WXTが正しくService Workerを生成
 ### Pull Requestとmain更新時
 
 1. Node.jsを`.nvmrc`と同じメジャーへ設定する。
-2. `npm ci`。
-3. format check。
-4. lint。
-5. typecheck。
-6. unit、Repository、UI test。
-7. production build。
-8. E2E。
+2. `pnpm install --frozen-lockfile`。
+3. `pnpm audit --audit-level=low`。
+4. format check。
+5. lint。
+6. typecheck。
+7. unit、Repository、UI test。
+8. production build。
+9. E2E。
 
 ### CI要件
 
