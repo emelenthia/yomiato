@@ -19,6 +19,7 @@ export interface PageRepository {
   add(page: Page): Promise<void>;
   update(page: Page): Promise<void>;
   deleteById(id: PageId): Promise<void>;
+  isReferenced(id: PageId): Promise<boolean>;
   count(): Promise<number>;
 }
 
@@ -51,9 +52,9 @@ export interface DismissalEntryRepository {
 }
 
 export interface SettingRepository {
-  getByKey<TValue = unknown>(key: string): Promise<Setting<TValue> | undefined>;
+  getByKey(key: string): Promise<Setting | undefined>;
   list(): Promise<ReadonlyArray<Setting>>;
-  put<TValue>(setting: Setting<TValue>): Promise<void>;
+  put(setting: Setting): Promise<void>;
   deleteByKey(key: string): Promise<void>;
   count(): Promise<number>;
 }
