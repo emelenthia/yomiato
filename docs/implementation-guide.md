@@ -1106,6 +1106,7 @@ MVPでイベント処理が不要なら、WXTが正しくService Workerを生成
 5. `npm run build`
 6. `npm run test:e2e`
 7. `npm run zip`
+8. `npm run verify:release`
 
 ### 生成物確認
 
@@ -1230,7 +1231,7 @@ MVPでイベント処理が不要なら、WXTが正しくService Workerを生成
 - [ ] 工程10: バックアップとデータ管理
 - [ ] 工程11: Backgroundと統合
 - [ ] 工程12: E2Eと回帰テスト
-- [ ] 工程13: 品質・セキュリティ確認
+- [x] 工程13: 品質・セキュリティ確認
 - [ ] 工程14: CI
 - [ ] MVP全体の受け入れ基準
 
