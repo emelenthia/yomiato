@@ -1,5 +1,10 @@
 # よみあと
 
+## E2Eテストの実行
+
+- `npm run test:e2e` は単独コマンドとして、実行前にユーザー承認を求めてサンドボックス外で実行する。macOSではCodexのサンドボックス内からChrome for Testingを起動すると、LaunchServicesのアプリ登録処理で`SIGABRT`になる
+- `playwright test`やChrome for Testingを直接起動せず、工程12・工程13に記載された`npm run test:e2e`を使う
+
 ## PR本文の書き方
 
 `.github/pull_request_template.md` の節構成に従って書く。見出しと順序は変えず、`gh pr create` で本文を渡すときもテンプレートの節をそのまま使う。加えて次を守る。
