@@ -33,7 +33,7 @@ export const dashboardViews = [
     title: '設定・データ管理',
     description: '保存方針とデータ管理を確認します。',
     emptyTitle: '保存データはまだありません',
-    emptyDescription: 'データ管理の機能は後続の工程で利用できます。',
+    emptyDescription: '設定・データ管理を利用できません。',
   },
 ] as const;
 

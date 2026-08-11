@@ -73,6 +73,7 @@ export function SettingsView({
   const [summary, setSummary] = React.useState<DataSummary>();
   const [isLoading, setIsLoading] = React.useState(true);
   const [isExporting, setIsExporting] = React.useState(false);
+  const [isReadingFile, setIsReadingFile] = React.useState(false);
   const [isImporting, setIsImporting] = React.useState(false);
   const [isClearing, setIsClearing] = React.useState(false);
   const [pendingImport, setPendingImport] = React.useState<PendingImport>();
@@ -82,6 +83,7 @@ export function SettingsView({
   const [error, setError] = React.useState<string>();
   const [dialogError, setDialogError] = React.useState<string>();
   const importTriggerRef = React.useRef<HTMLInputElement>(null);
+  const fileReadRequestRef = React.useRef(0);
   const clearTriggerRef = React.useRef<HTMLButtonElement>(null);
   const clearInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -130,12 +132,15 @@ export function SettingsView({
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
+    const requestId = ++fileReadRequestRef.current;
     const file = event.target.files?.[0];
     event.target.value = '';
+    setIsReadingFile(true);
     setPendingImport(undefined);
     clearMessage();
 
     if (!file) {
+      setIsReadingFile(false);
       return;
     }
 
@@ -143,15 +148,24 @@ export function SettingsView({
       setError(
         `ファイルが大きすぎます。${formatBytes(MAX_IMPORT_FILE_SIZE)}以下のJSONを選んでください。`,
       );
+      setIsReadingFile(false);
       return;
     }
 
     try {
       const json = await services.browser.readFile(file);
       const preview = services.importBackup.preview(json);
-      setPendingImport({ json, preview });
+      if (requestId === fileReadRequestRef.current) {
+        setPendingImport({ json, preview });
+      }
     } catch (importError) {
-      setError(getSettingsErrorMessage(importError, 'バックアップの確認'));
+      if (requestId === fileReadRequestRef.current) {
+        setError(getSettingsErrorMessage(importError, 'バックアップの確認'));
+      }
+    } finally {
+      if (requestId === fileReadRequestRef.current) {
+        setIsReadingFile(false);
+      }
     }
   };
 
@@ -333,6 +347,7 @@ export function SettingsView({
             ref={importTriggerRef}
             type="file"
             accept=".json,application/json"
+            disabled={isReadingFile || isImporting || isClearing}
             onChange={(event) => void handleFileChange(event)}
           />
         </section>

@@ -1,4 +1,10 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type {
@@ -139,6 +145,53 @@ describe('工程10の設定・データ管理', () => {
       ),
     ).toBeVisible();
     expect(services.browser.readFile).not.toHaveBeenCalled();
+  });
+
+  it('ファイル読み込み中は入力を無効化し、最新の選択結果だけを採用する', async () => {
+    let resolveFirst: (value: string) => void = () => undefined;
+    let resolveSecond: (value: string) => void = () => undefined;
+    const firstRead = new Promise<string>((resolve) => {
+      resolveFirst = resolve;
+    });
+    const secondRead = new Promise<string>((resolve) => {
+      resolveSecond = resolve;
+    });
+    const services = createServices({
+      browser: {
+        downloadJson: vi.fn(),
+        readFile: vi
+          .fn()
+          .mockReturnValueOnce(firstRead)
+          .mockReturnValueOnce(secondRead),
+      },
+    });
+    const user = userEvent.setup();
+    render(<SettingsView services={services} />);
+
+    const input = screen.getByLabelText('JSONファイルを選ぶ');
+    fireEvent.change(input, {
+      target: { files: [new File(['first'], 'first.json')] },
+    });
+    expect(input).toBeDisabled();
+
+    fireEvent.change(input, {
+      target: { files: [new File(['second'], 'second.json')] },
+    });
+    resolveSecond('second-json');
+    expect(
+      await screen.findByRole('heading', {
+        name: 'バックアップを復元しますか',
+      }),
+    ).toBeVisible();
+    resolveFirst('first-json');
+    await waitFor(() =>
+      expect(services.browser.readFile).toHaveBeenCalledTimes(2),
+    );
+
+    await user.click(screen.getByRole('button', { name: '全置換して復元' }));
+    await waitFor(() => {
+      expect(services.importBackup.execute).toHaveBeenCalledWith('second-json');
+    });
   });
 
   it('「よみあと」の入力後だけ全データ削除を実行する', async () => {
