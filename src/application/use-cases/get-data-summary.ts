@@ -16,7 +16,7 @@ export class GetDataSummary {
       ]);
 
     return {
-      schemaVersion: 1,
+      schemaVersion: this.dependencies.schemaVersionProvider.getSchemaVersion(),
       pages,
       inboxItems,
       readingEntries,

@@ -22,6 +22,7 @@ import {
 } from '../src/application/use-cases';
 import {
   createDexieRepositorySet,
+  DexieSchemaVersionProvider,
   DexieRepositoryTransaction,
   createYomiatoDatabase,
 } from '../src/infrastructure/db';
@@ -37,19 +38,27 @@ function createDatabaseName(): string {
 
 function createDependencies(db: YomiatoDatabase) {
   let idSequence = 0;
+  let currentTime = '2026-08-11T00:00:00.000Z';
   const clock: Clock = {
-    now: () => new Date('2026-08-11T00:00:00.000Z'),
+    now: () => new Date(currentTime),
   };
   const idGenerator: IdGenerator = {
     generate: () => `id-${++idSequence}`,
   };
 
-  return createUseCaseDependencies({
+  const dependencies = createUseCaseDependencies({
     repositories: createDexieRepositorySet(db),
     transaction: new DexieRepositoryTransaction(db),
     clock,
     idGenerator,
+    schemaVersionProvider: new DexieSchemaVersionProvider(db),
     appVersion: '0.0.0-test',
+  });
+
+  return Object.assign(dependencies, {
+    setNow: (value: string) => {
+      currentTime = value;
+    },
   });
 }
 
@@ -98,6 +107,7 @@ describe('Applicationユースケース', () => {
       await expect(
         new GetDataSummary(dependencies).execute(),
       ).resolves.toMatchObject({
+        schemaVersion: 1,
         pages: 1,
         inboxItems: 1,
       });
@@ -149,6 +159,11 @@ describe('Applicationユースケース', () => {
         pageId: completed.page.id,
         reflection: '二回目の気づき',
         noTakeaway: false,
+      });
+      await expect(
+        new GetReadingEntry(dependencies).execute(completed.readingEntry.id),
+      ).resolves.toMatchObject({
+        readingEntry: completed.readingEntry,
       });
       const updated = await new UpdateReadingEntry(dependencies).execute({
         readingEntryId: completed.readingEntry.id,
@@ -267,6 +282,13 @@ describe('Applicationユースケース', () => {
       await expect(new GetDataSummary(dependencies).execute()).resolves.toEqual(
         before,
       );
+      const nonUtcJson = exported.json.replace(
+        '2026-08-11T00:00:00.000Z',
+        '2026-08-11T09:00:00.000+09:00',
+      );
+      expect(() => importer.preview(nonUtcJson)).toThrowError(
+        expect.objectContaining({ code: 'INVALID_BACKUP' }),
+      );
       expect(() =>
         importer.preview(
           JSON.stringify({ formatName: 'yomiato-backup', schemaVersion: 2 }),
@@ -274,6 +296,68 @@ describe('Applicationユースケース', () => {
       ).toThrowError(
         expect.objectContaining({ code: 'UNSUPPORTED_BACKUP_VERSION' }),
       );
+    });
+  });
+
+  it('一覧の時系列順、同時刻の安定順、大文字小文字を区別しない検索を保証する', async () => {
+    await withDependencies(async (dependencies) => {
+      const capture = new CapturePageToInbox(dependencies);
+      const first = await capture.execute({
+        url: 'https://example.com/first',
+        title: 'First',
+        source: 'current-tab',
+      });
+      dependencies.setNow('2026-08-11T01:00:00.000Z');
+      const second = await capture.execute({
+        url: 'https://example.com/second',
+        title: 'Second',
+        source: 'current-tab',
+      });
+      const third = await capture.execute({
+        url: 'https://example.com/third',
+        title: 'Third',
+        source: 'current-tab',
+      });
+
+      expect(
+        (await new ListInbox(dependencies).execute()).map(
+          (item) => item.page.title,
+        ),
+      ).toEqual(['Third', 'Second', 'First']);
+
+      dependencies.setNow('2026-08-11T02:00:00.000Z');
+      const firstReading = await new CompleteInboxItem(dependencies).execute({
+        inboxItemId: first.inboxItem.id,
+        reflection: 'Alpha reflection',
+        noTakeaway: false,
+      });
+      dependencies.setNow('2026-08-11T03:00:00.000Z');
+      const secondReading = await new CompleteInboxItem(dependencies).execute({
+        inboxItemId: second.inboxItem.id,
+        reflection: 'Beta reflection',
+        noTakeaway: false,
+      });
+      const thirdReading = await new CompleteInboxItem(dependencies).execute({
+        inboxItemId: third.inboxItem.id,
+        reflection: 'Gamma reflection',
+        noTakeaway: false,
+      });
+
+      expect(
+        (await new ListReadingLog(dependencies).execute()).map(
+          (item) => item.readingEntry.id,
+        ),
+      ).toEqual([
+        thirdReading.readingEntry.id,
+        secondReading.readingEntry.id,
+        firstReading.readingEntry.id,
+      ]);
+      expect(
+        await new SearchReadingLog(dependencies).execute('ALPHA'),
+      ).toHaveLength(1);
+      expect(
+        await new SearchReadingLog(dependencies).execute('EXAMPLE.COM'),
+      ).toHaveLength(3);
     });
   });
 

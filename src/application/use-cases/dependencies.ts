@@ -3,6 +3,7 @@ import type {
   IdGenerator,
   RepositorySet,
   RepositoryTransaction,
+  SchemaVersionProvider,
 } from '../../domain/ports';
 
 export interface UseCaseDependencies {
@@ -10,6 +11,7 @@ export interface UseCaseDependencies {
   transaction: RepositoryTransaction;
   clock: Clock;
   idGenerator: IdGenerator;
+  schemaVersionProvider: SchemaVersionProvider;
   appVersion?: string;
 }
 

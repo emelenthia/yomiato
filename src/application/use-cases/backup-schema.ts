@@ -10,6 +10,8 @@ import {
   MAX_TITLE_LENGTH,
 } from '../../shared/constants/limits';
 
+const utcIsoDateTimeSchema = z.string().datetime({ offset: false });
+
 const jsonValueSchema: z.ZodType<unknown> = z.lazy(() =>
   z.union([
     z.string(),
@@ -28,8 +30,8 @@ const pageSchema = z
     originalUrl: z.string().min(1),
     title: z.string(),
     siteName: z.string().min(1),
-    createdAt: z.string().datetime({ offset: true }),
-    updatedAt: z.string().datetime({ offset: true }),
+    createdAt: utcIsoDateTimeSchema,
+    updatedAt: utcIsoDateTimeSchema,
   })
   .strict();
 
@@ -39,8 +41,8 @@ const inboxItemSchema = z
     pageId: z.string().min(1),
     status: z.enum(['unread', 'reading']),
     source: z.enum(['current-tab', 'tab-import']),
-    addedAt: z.string().datetime({ offset: true }),
-    startedAt: z.string().datetime({ offset: true }).optional(),
+    addedAt: utcIsoDateTimeSchema,
+    startedAt: utcIsoDateTimeSchema.optional(),
   })
   .strict();
 
@@ -56,9 +58,9 @@ const readingEntrySchema = z
       'action',
       'none',
     ]),
-    completedAt: z.string().datetime({ offset: true }),
-    createdAt: z.string().datetime({ offset: true }),
-    updatedAt: z.string().datetime({ offset: true }),
+    completedAt: utcIsoDateTimeSchema,
+    createdAt: utcIsoDateTimeSchema,
+    updatedAt: utcIsoDateTimeSchema,
   })
   .strict();
 
@@ -67,7 +69,7 @@ const dismissalEntrySchema = z
     id: z.string().min(1),
     pageId: z.string().min(1),
     reason: z.string(),
-    dismissedAt: z.string().datetime({ offset: true }),
+    dismissedAt: utcIsoDateTimeSchema,
   })
   .strict();
 
@@ -83,7 +85,7 @@ export const backupSchema = z
     formatName: z.literal('yomiato-backup'),
     schemaVersion: z.literal(1),
     appVersion: z.string().min(1),
-    exportedAt: z.string().datetime({ offset: true }),
+    exportedAt: utcIsoDateTimeSchema,
     pages: z.array(pageSchema),
     inboxItems: z.array(inboxItemSchema),
     readingEntries: z.array(readingEntrySchema),

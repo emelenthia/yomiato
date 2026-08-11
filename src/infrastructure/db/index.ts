@@ -8,4 +8,8 @@ export {
   DexieSettingRepository,
   createDexieRepositorySet,
 } from './repositories';
-export { createYomiatoDatabase, YomiatoDatabase } from './schema';
+export {
+  createYomiatoDatabase,
+  DexieSchemaVersionProvider,
+  YomiatoDatabase,
+} from './schema';
