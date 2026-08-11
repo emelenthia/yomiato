@@ -8,6 +8,8 @@ import TabImportPanel from '../../features/tab-import/TabImportPanel';
 import type { TabImportServices } from '../../features/tab-import';
 import InboxView from '../../features/inbox/InboxView';
 import type { InboxServices } from '../../features/inbox/inbox-services';
+import ReadingLogView from '../../features/reading-log/ReadingLogView';
+import type { ReadingLogServices } from '../../features/reading-log/reading-log-services';
 
 export const dashboardViews = [
   {
@@ -45,6 +47,7 @@ export interface CompletionDraft {
 export interface DashboardAppProps {
   tabImportServices?: TabImportServices;
   inboxServices?: InboxServices;
+  readingLogServices?: ReadingLogServices;
 }
 
 export function getDashboardView(search: string): DashboardViewId {
@@ -87,7 +90,11 @@ function updateDashboardUrl(view: DashboardViewId) {
   window.history.pushState({ view }, '', url);
 }
 
-function DashboardApp({ tabImportServices, inboxServices }: DashboardAppProps) {
+function DashboardApp({
+  tabImportServices,
+  inboxServices,
+  readingLogServices,
+}: DashboardAppProps) {
   const [activeView, setActiveView] = React.useState<DashboardViewId>(() =>
     getDashboardView(window.location.search),
   );
@@ -228,6 +235,8 @@ function DashboardApp({ tabImportServices, inboxServices }: DashboardAppProps) {
               services={inboxServices}
               refreshToken={inboxRefreshToken}
             />
+          ) : activeView === 'log' && readingLogServices ? (
+            <ReadingLogView services={readingLogServices} />
           ) : (
             <EmptyState
               title={selectedView.emptyTitle}

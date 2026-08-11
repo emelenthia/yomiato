@@ -4,6 +4,7 @@ import DashboardApp from './DashboardApp.tsx';
 import { DashboardErrorBoundary } from './DashboardErrorBoundary.tsx';
 import { createInboxRuntime } from '../../features/inbox/runtime';
 import { createTabImportRuntime } from '../../features/tab-import';
+import { createReadingLogRuntime } from '../../features/reading-log';
 import './style.css';
 
 const rootElement = document.getElementById('root');
@@ -14,6 +15,7 @@ if (!rootElement) {
 
 const tabImportRuntime = createTabImportRuntime();
 const inboxRuntime = createInboxRuntime();
+const readingLogRuntime = createReadingLogRuntime();
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
@@ -21,6 +23,7 @@ ReactDOM.createRoot(rootElement).render(
       <DashboardApp
         tabImportServices={tabImportRuntime.services}
         inboxServices={inboxRuntime.services}
+        readingLogServices={readingLogRuntime.services}
       />
     </DashboardErrorBoundary>
   </React.StrictMode>,
