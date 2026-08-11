@@ -4,6 +4,8 @@ import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
 import { parseAndNormalizeUrl } from '../../domain/values/url';
 import { normalizeTitle } from '../../shared/utils/text';
+import TabImportPanel from '../../features/tab-import/TabImportPanel';
+import type { TabImportServices } from '../../features/tab-import';
 
 export const dashboardViews = [
   {
@@ -36,6 +38,10 @@ const defaultView: DashboardViewId = 'inbox';
 export interface CompletionDraft {
   url: string;
   title: string;
+}
+
+export interface DashboardAppProps {
+  tabImportServices?: TabImportServices;
 }
 
 export function getDashboardView(search: string): DashboardViewId {
@@ -78,13 +84,15 @@ function updateDashboardUrl(view: DashboardViewId) {
   window.history.pushState({ view }, '', url);
 }
 
-function DashboardApp() {
+function DashboardApp({ tabImportServices }: DashboardAppProps) {
   const [activeView, setActiveView] = React.useState<DashboardViewId>(() =>
     getDashboardView(window.location.search),
   );
   const [completionDraft, setCompletionDraft] = React.useState(() =>
     getCompletionDraft(window.location.search),
   );
+  const [isTabImportOpen, setIsTabImportOpen] = React.useState(false);
+  const tabImportTriggerRef = React.useRef<HTMLButtonElement>(null);
   const completionRoute =
     new URLSearchParams(window.location.search).get('view') === 'complete';
 
@@ -106,6 +114,7 @@ function DashboardApp() {
   React.useEffect(() => {
     const handlePopState = () => {
       setActiveView(getDashboardView(window.location.search));
+      setIsTabImportOpen(false);
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -125,7 +134,13 @@ function DashboardApp() {
 
     updateDashboardUrl(view);
     setCompletionDraft(undefined);
+    setIsTabImportOpen(false);
     setActiveView(view);
+  };
+
+  const handleTabImportClose = () => {
+    setIsTabImportOpen(false);
+    window.setTimeout(() => tabImportTriggerRef.current?.focus(), 0);
   };
 
   return (
@@ -140,7 +155,11 @@ function DashboardApp() {
         </p>
       </header>
 
-      <nav aria-label="管理画面のビュー">
+      <nav
+        aria-label="管理画面のビュー"
+        aria-hidden={isTabImportOpen || undefined}
+        inert={isTabImportOpen || undefined}
+      >
         {dashboardViews.map((view) => (
           <Button
             type="button"
@@ -180,6 +199,25 @@ function DashboardApp() {
           <p className="eyebrow">現在のビュー</p>
           <h2 id="active-view-heading">{selectedView.title}</h2>
           <p className="view-description">{selectedView.description}</p>
+          {activeView === 'inbox' && tabImportServices ? (
+            <div className="tab-import-entry">
+              {isTabImportOpen ? (
+                <TabImportPanel
+                  services={tabImportServices}
+                  onClose={handleTabImportClose}
+                />
+              ) : (
+                <Button
+                  type="button"
+                  variant="primary"
+                  ref={tabImportTriggerRef}
+                  onClick={() => setIsTabImportOpen(true)}
+                >
+                  複数タブを取り込む
+                </Button>
+              )}
+            </div>
+          ) : null}
           <EmptyState
             title={selectedView.emptyTitle}
             description={selectedView.emptyDescription}
