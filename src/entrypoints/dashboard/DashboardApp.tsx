@@ -1,9 +1,11 @@
 import React from 'react';
 import './DashboardApp.css';
+import type { CompleteCurrentPage } from '../../application/use-cases';
 import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
 import { parseAndNormalizeUrl } from '../../domain/values/url';
 import { normalizeTitle } from '../../shared/utils/text';
+import { ReflectionForm } from '../../features/completion/ReflectionForm';
 import TabImportPanel from '../../features/tab-import/TabImportPanel';
 import type { TabImportServices } from '../../features/tab-import';
 import InboxView from '../../features/inbox/InboxView';
@@ -47,6 +49,7 @@ export interface CompletionDraft {
 }
 
 export interface DashboardAppProps {
+  completeCurrentPage?: Pick<CompleteCurrentPage, 'execute'>;
   tabImportServices?: TabImportServices;
   inboxServices?: InboxServices;
   readingLogServices?: ReadingLogServices;
@@ -94,6 +97,7 @@ function updateDashboardUrl(view: DashboardViewId) {
 }
 
 function DashboardApp({
+  completeCurrentPage,
   tabImportServices,
   inboxServices,
   readingLogServices,
@@ -154,6 +158,39 @@ function DashboardApp({
     setActiveView(view);
   };
 
+  const handleCompletionCancel = () => {
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.searchParams.set('view', 'inbox');
+    window.history.replaceState({ view: 'inbox' }, '', url);
+    setCompletionDraft(undefined);
+    setActiveView('inbox');
+  };
+
+  const handleCompletionSave = async (
+    reflection: string,
+    noTakeaway: boolean,
+  ) => {
+    if (!completionDraft || !completeCurrentPage) {
+      return;
+    }
+
+    await completeCurrentPage.execute({
+      url: completionDraft.url,
+      title: completionDraft.title,
+      reflection,
+      noTakeaway,
+    });
+
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.searchParams.set('view', 'log');
+    window.history.replaceState({ view: 'log' }, '', url);
+    setCompletionDraft(undefined);
+    setActiveView('log');
+    setDataRefreshToken((current) => current + 1);
+  };
+
   const handleTabImportClose = () => {
     setIsTabImportOpen(false);
     setInboxRefreshToken((current) => current + 1);
@@ -207,9 +244,18 @@ function DashboardApp({
               <dd>{completionDraft.url}</dd>
             </div>
           </dl>
-          <p className="status" role="status">
-            振り返りの入力画面は次の工程で追加します。
-          </p>
+          {completeCurrentPage ? (
+            <ReflectionForm
+              reflectionId="direct-completion-reflection"
+              operationLabel="読了"
+              onCancel={handleCompletionCancel}
+              onSave={handleCompletionSave}
+            />
+          ) : (
+            <p className="status" role="status">
+              読了入力を準備できませんでした。
+            </p>
+          )}
         </section>
       ) : (
         <section className="view-panel" aria-labelledby="active-view-heading">
