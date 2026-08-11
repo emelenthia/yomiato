@@ -1,5 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { CompleteCurrentPage } from '../../application/use-cases';
+import { createFeatureUseCaseDependencies } from '../../features/runtime/application-dependencies';
 import DashboardApp from './DashboardApp.tsx';
 import { DashboardErrorBoundary } from './DashboardErrorBoundary.tsx';
 import { createInboxRuntime } from '../../features/inbox/runtime';
@@ -20,11 +22,15 @@ const tabImportRuntime = createTabImportRuntime(database);
 const inboxRuntime = createInboxRuntime(database);
 const readingLogRuntime = createReadingLogRuntime(database);
 const settingsRuntime = createSettingsRuntime(database);
+const completeCurrentPage = new CompleteCurrentPage(
+  createFeatureUseCaseDependencies(database),
+);
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <DashboardErrorBoundary>
       <DashboardApp
+        completeCurrentPage={completeCurrentPage}
         tabImportServices={tabImportRuntime.services}
         inboxServices={inboxRuntime.services}
         readingLogServices={readingLogRuntime.services}
