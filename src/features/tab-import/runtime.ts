@@ -1,17 +1,10 @@
-import {
-  GetPageStatus,
-  ImportTabsToInbox,
-  createUseCaseDependencies,
-} from '../../application/use-cases';
-import { createCryptoIdGenerator, createSystemClock } from '../../domain/ports';
+import { GetPageStatus, ImportTabsToInbox } from '../../application/use-cases';
 import { createWxtBrowserGateway } from '../../infrastructure/browser';
 import {
-  createDexieRepositorySet,
   createYomiatoDatabase,
-  DexieRepositoryTransaction,
-  DexieSchemaVersionProvider,
   type YomiatoDatabase,
 } from '../../infrastructure/db';
+import { createFeatureUseCaseDependencies } from '../runtime/application-dependencies';
 import type { TabImportServices } from './tab-import-services';
 
 export interface TabImportRuntime {
@@ -19,16 +12,11 @@ export interface TabImportRuntime {
   services: TabImportServices;
 }
 
-export function createTabImportRuntime(): TabImportRuntime {
-  const database = createYomiatoDatabase();
+export function createTabImportRuntime(
+  database = createYomiatoDatabase(),
+): TabImportRuntime {
   const browser = createWxtBrowserGateway();
-  const dependencies = createUseCaseDependencies({
-    repositories: createDexieRepositorySet(database),
-    transaction: new DexieRepositoryTransaction(database),
-    clock: createSystemClock(),
-    idGenerator: createCryptoIdGenerator(),
-    schemaVersionProvider: new DexieSchemaVersionProvider(database),
-  });
+  const dependencies = createFeatureUseCaseDependencies(database);
 
   return {
     database,

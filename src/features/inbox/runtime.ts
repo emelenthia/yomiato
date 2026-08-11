@@ -3,17 +3,13 @@ import {
   DeleteInboxItem,
   DismissInboxItem,
   ListInbox,
-  createUseCaseDependencies,
 } from '../../application/use-cases';
-import { createCryptoIdGenerator, createSystemClock } from '../../domain/ports';
 import { createWxtBrowserGateway } from '../../infrastructure/browser';
 import {
-  createDexieRepositorySet,
   createYomiatoDatabase,
-  DexieRepositoryTransaction,
-  DexieSchemaVersionProvider,
   type YomiatoDatabase,
 } from '../../infrastructure/db';
+import { createFeatureUseCaseDependencies } from '../runtime/application-dependencies';
 import type { InboxServices } from './inbox-services';
 
 export interface InboxRuntime {
@@ -21,15 +17,10 @@ export interface InboxRuntime {
   services: InboxServices;
 }
 
-export function createInboxRuntime(): InboxRuntime {
-  const database = createYomiatoDatabase();
-  const dependencies = createUseCaseDependencies({
-    repositories: createDexieRepositorySet(database),
-    transaction: new DexieRepositoryTransaction(database),
-    clock: createSystemClock(),
-    idGenerator: createCryptoIdGenerator(),
-    schemaVersionProvider: new DexieSchemaVersionProvider(database),
-  });
+export function createInboxRuntime(
+  database = createYomiatoDatabase(),
+): InboxRuntime {
+  const dependencies = createFeatureUseCaseDependencies(database);
 
   return {
     database,
