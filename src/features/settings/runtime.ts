@@ -3,17 +3,13 @@ import {
   ExportBackup,
   GetDataSummary,
   ImportBackup,
-  createUseCaseDependencies,
 } from '../../application/use-cases';
-import { createCryptoIdGenerator, createSystemClock } from '../../domain/ports';
 import { createWxtBrowserGateway } from '../../infrastructure/browser';
 import {
-  createDexieRepositorySet,
   createYomiatoDatabase,
-  DexieRepositoryTransaction,
-  DexieSchemaVersionProvider,
   type YomiatoDatabase,
 } from '../../infrastructure/db';
+import { createFeatureUseCaseDependencies } from '../runtime/application-dependencies';
 import type { SettingsServices } from './settings-services';
 
 export interface SettingsRuntime {
@@ -21,17 +17,14 @@ export interface SettingsRuntime {
   services: SettingsServices;
 }
 
-export function createSettingsRuntime(): SettingsRuntime {
-  const database = createYomiatoDatabase();
+export function createSettingsRuntime(
+  database = createYomiatoDatabase(),
+): SettingsRuntime {
   const browser = createWxtBrowserGateway();
-  const dependencies = createUseCaseDependencies({
-    repositories: createDexieRepositorySet(database),
-    transaction: new DexieRepositoryTransaction(database),
-    clock: createSystemClock(),
-    idGenerator: createCryptoIdGenerator(),
-    schemaVersionProvider: new DexieSchemaVersionProvider(database),
-    appVersion: browser.getAppVersion(),
-  });
+  const dependencies = createFeatureUseCaseDependencies(
+    database,
+    browser.getAppVersion(),
+  );
 
   return {
     database,

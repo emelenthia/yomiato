@@ -1,3 +1,3 @@
 export default defineBackground(() => {
-  console.log('Hello background!', { id: browser.runtime.id });
+  // MVPではイベント処理と永続状態を持たず、WXTがService Workerを登録する。
 });

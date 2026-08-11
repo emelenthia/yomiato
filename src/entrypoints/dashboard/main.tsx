@@ -6,6 +6,7 @@ import { createInboxRuntime } from '../../features/inbox/runtime';
 import { createTabImportRuntime } from '../../features/tab-import';
 import { createReadingLogRuntime } from '../../features/reading-log';
 import { createSettingsRuntime } from '../../features/settings/runtime';
+import { createYomiatoDatabase } from '../../infrastructure/db';
 import './style.css';
 
 const rootElement = document.getElementById('root');
@@ -14,10 +15,11 @@ if (!rootElement) {
   throw new Error('Dashboard root element was not found.');
 }
 
-const tabImportRuntime = createTabImportRuntime();
-const inboxRuntime = createInboxRuntime();
-const readingLogRuntime = createReadingLogRuntime();
-const settingsRuntime = createSettingsRuntime();
+const database = createYomiatoDatabase();
+const tabImportRuntime = createTabImportRuntime(database);
+const inboxRuntime = createInboxRuntime(database);
+const readingLogRuntime = createReadingLogRuntime(database);
+const settingsRuntime = createSettingsRuntime(database);
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
